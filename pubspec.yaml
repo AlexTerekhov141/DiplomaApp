@@ -1,0 +1,54 @@
+name: categorize_app
+description: "A Categorize project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.7
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.0
+  auto_route: ^10.1.0+1
+  talker: ^5.0.0
+  talker_flutter: ^5.0.0
+  get_it: ^8.2.0
+  talker_bloc_logger: ^5.0.0
+  firebase_messaging: ^16.0.0
+  cloud_firestore: ^6.0.0
+  formz: ^0.8.0
+  talker_dio_logger: ^5.0.0
+  salomon_bottom_bar: ^3.3.2
+  nested: any
+  intl: ^0.20.2
+  timezone: ^0.10.1
+  rive: ^0.13.20
+  hexcolor: ^3.0.1
+  google_fonts: ^6.3.0
+  dio: ^5.9.0
+  cached_network_image: ^3.4.1
+  json_annotation: any
+  firebase_ai: ^3.1.0
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+  photo_manager: ^3.8.3
+  photo_manager_image_provider: ^2.2.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.5.4
+  auto_route_generator: ^10.2.3
+  json_serializable: ^6.9.5
+
+flutter:
+  assets:
+
+  uses-material-design: true
+
+
+
