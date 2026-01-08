@@ -1,8 +1,12 @@
+import 'package:auto_route/annotations.dart';
 import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/BottomBar.dart';
-import 'package:categorize_app/pages/Pages/mainPages/GalleryPage.dart';
+import 'package:categorize_app/pages/mainPages/Photos/FoldersPage.dart';
+import 'package:categorize_app/pages/mainPages/Photos/GalleryPage.dart';
 import 'package:flutter/material.dart';
 
+
+@RoutePage()
 class AppPage extends StatefulWidget {
   const AppPage({super.key});
 
@@ -26,6 +30,7 @@ class _AppPageState extends State<AppPage> {
     return Scaffold(
       appBar: AppAppBar(),
       body: PageView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,
         onPageChanged: (int index) {
           setState(() {
@@ -34,7 +39,7 @@ class _AppPageState extends State<AppPage> {
         },
         children: const <Widget>[
           GalleryPage(),
-          Placeholder(),
+          FoldersPage(),
           Placeholder(),
         ],
       ),

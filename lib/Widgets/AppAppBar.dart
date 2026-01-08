@@ -1,4 +1,11 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:categorize_app/Routes/routes.gr.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../bloc/themebloc/bloc.dart';
+import '../bloc/themebloc/events.dart';
+import '../bloc/themebloc/states.dart';
 
 
 class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
@@ -7,14 +14,8 @@ class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
     return AppBar(
         leading: const Icon(Icons.add),
         actions:<Widget>[
-          ElevatedButton(
-              onPressed: ()=><dynamic, dynamic>{},
-              child: const Icon(Icons.person)
-          ),
-          ElevatedButton(
-              onPressed: ()=><dynamic, dynamic>{},
-              child: const Icon(Icons.dark_mode)
-          )
+          _ProfileWidget(context),
+          _switchTheme(),
         ]
     );
   }
@@ -24,7 +25,7 @@ class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
 }
 
 
-/*Widget _switchTheme(){
+Widget _switchTheme(){
   return  BlocBuilder<ThemeBloc, ThemeState>(
     builder: (BuildContext context, ThemeState state) {
       return IconButton(
@@ -37,4 +38,13 @@ class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
       );
     },
   );
-}*/
+}
+Widget _ProfileWidget(BuildContext context){
+  return  IconButton(
+      onPressed: () {
+        context.router.push(const ProfileRoute());
+      },
+      icon: const Icon(Icons.person)
+  );
+}
+
