@@ -1,10 +1,8 @@
-import 'package:categorize_app/bloc/PhotosBloc/bloc.dart';
-import 'package:categorize_app/bloc/PhotosBloc/states.dart';
-import 'package:categorize_app/models/Folders/Folder.dart';
+import 'package:categorize_app/bloc/StatisticsBloc/bloc.dart';
+import 'package:categorize_app/bloc/StatisticsBloc/states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../models/Tags.dart';
 
 
 class StatisticsCard extends StatelessWidget {
@@ -12,10 +10,8 @@ class StatisticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Tags tags = Tags();
-    final Folder folders = Folder(id: '', name: '', photosCount: 0);
-    return BlocBuilder<PhotosBloc, PhotosState>(
-      builder: (BuildContext context, PhotosState state) {
+    return BlocBuilder<StatisticsBloc, StatisticsState>(
+      builder: (BuildContext context, StatisticsState state) {
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -23,9 +19,9 @@ class StatisticsCard extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            _StatItem(label: 'Photos', value: state.photos.length),
-            _StatItem(label: 'Folders', value: tags.amount),
-            _StatItem(label: 'Tags', value: folders.amount),
+            _StatItem(label: 'Photos', value: state.photosCount),
+            _StatItem(label: 'Folders', value: state.foldersCount),
+            _StatItem(label: 'Tags', value: state.tagsCount),
           ],
         );
       },
