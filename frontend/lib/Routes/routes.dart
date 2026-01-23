@@ -15,7 +15,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: PhotoViewerRoute.page),
     AutoRoute(page: ProfileRoute.page),
     AutoRoute(page: FoldersRoute.page),
-    AutoRoute(page: ChatRoute.page)
+    AutoRoute(page: ChatRoute.page),
+    AutoRoute(page: FolderDetailsRoute.page)
   ];
 
 }
