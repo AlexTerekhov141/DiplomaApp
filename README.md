@@ -9,13 +9,15 @@
 1. Бэкенд:
    ```bash
    cd backend
-   python -m venv venv
+   python -m venv .venv
    # Windows
-   .\venv\Scripts\activate
+   .\.venv\Scripts\activate
    # macOS/Linux
-   source venv/bin/activate
+   source .venv/bin/activate
    pip install -r requirements.txt
-   python manage.py 
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py runserver
    ```
 2. Фронтенд:
    ```bash
