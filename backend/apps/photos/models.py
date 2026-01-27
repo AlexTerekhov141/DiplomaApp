@@ -9,7 +9,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=100, unique=True, verbose_name="Название")
     description = models.TextField(blank=True, verbose_name="Описание")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
 
     class Meta:
         verbose_name = "Категория"
@@ -24,7 +24,7 @@ class Tag(models.Model):
     """Теги для фото"""
 
     name = models.CharField(max_length=50, unique=True, verbose_name="Название")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
 
     class Meta:
         verbose_name = "Тег"
@@ -72,8 +72,8 @@ class Photo(models.Model):
         verbose_name="Обработано",
         help_text="Флаг завершения ML-обработки",
     )
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата загрузки")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
 
     class Meta:
         verbose_name = "Фотография"
