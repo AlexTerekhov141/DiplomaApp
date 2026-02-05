@@ -1,3 +1,4 @@
+import 'package:categorize_app/Routes/routegard.dart';
 import 'package:categorize_app/bloc/themebloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +7,8 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import 'Routes/routes.dart';
 import 'bloc/themebloc/states.dart';
-
-final AppRouter _appRouter = AppRouter();
+final RouteGuard authGuard = RouteGuard();
+final AppRouter _appRouter = AppRouter(authGuard);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

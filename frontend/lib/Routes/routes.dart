@@ -1,10 +1,14 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:categorize_app/Routes/routegard.dart';
 import 'package:categorize_app/Routes/routes.gr.dart';
 
 
 
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
+  AppRouter(this.routeGuard);
+
+  final RouteGuard routeGuard;
   @override
   RouteType get defaultRouteType => const RouteType.material();
 
@@ -13,10 +17,13 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: AppRoute.page, initial: true),
     AutoRoute(page: GalleryRoute.page),
     AutoRoute(page: PhotoViewerRoute.page),
-    AutoRoute(page: ProfileRoute.page),
+    AutoRoute(page: ProfileRoute.page, guards: <AutoRouteGuard>[RouteGuard()]),
     AutoRoute(page: FoldersRoute.page),
     AutoRoute(page: ChatRoute.page),
-    AutoRoute(page: FolderDetailsRoute.page)
+    AutoRoute(page: FolderDetailsRoute.page),
+    AutoRoute(page: RegisterRoute.page),
+    AutoRoute(page: LoginRoute.page),
+    AutoRoute(page: EditRoute.page)
   ];
 
 }

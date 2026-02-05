@@ -1,9 +1,16 @@
-import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:categorize_app/Routes/routes.gr.dart';
+import 'package:categorize_app/bloc/AuthBloc/event.dart';
+import 'package:categorize_app/bloc/AuthBloc/state.dart';
 import 'package:categorize_app/cards/ChoiceCard.dart';
 import 'package:categorize_app/cards/ProfileCard.dart';
 import 'package:categorize_app/cards/StatisticsCard.dart';
 import 'package:categorize_app/models/User.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../bloc/AuthBloc/bloc.dart';
+
 
 @RoutePage()
 class ProfilePage extends StatefulWidget {
@@ -21,7 +28,10 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    const User user = User(imagePath: 'assets/profiles/profile.png');
+
+    final AuthState authState = context.watch<AuthBloc>().state;
+    final bool isAuth = authState.isAuthenticated;
+    final User user = authState.user;
 
     return Scaffold(
       body: SafeArea(
@@ -30,9 +40,15 @@ class _ProfilePageState extends State<ProfilePage>
           child: Column(
             children: <Widget>[
               ProfileCard(
-                name: 'Alexander Terekhov',
-                mail: 'terehovav52s@gmail.com',
-                image: AssetImage(user.imagePath),
+                hasAccount: isAuth,
+                name: isAuth ? '${user.firstName} ${user.lastName}' : null,
+                mail: isAuth ? user.email : null,
+                image: isAuth && user.imagePath.isNotEmpty
+                    ? AssetImage(user.imagePath)
+                    : const AssetImage('assets/profiles/profile.png'),
+                onEdit: isAuth
+                    ? () {context.router.push(EditRoute());}
+                    : null,
               ),
               const SizedBox(height: 24),
               const StatisticsCard(),
@@ -61,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage>
                 ],
                 onTapList: <VoidCallback>[
                       () { print('App settings'); },
-                      () { print('Logout tapped'); },
+                      () { context.read<AuthBloc>().add(AuthLogout());},
                 ],
               ),
 

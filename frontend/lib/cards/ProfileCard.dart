@@ -1,3 +1,5 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:categorize_app/Routes/routes.gr.dart';
 import 'package:flutter/material.dart';
 
 
@@ -6,13 +8,17 @@ class ProfileCard extends StatelessWidget {
   const ProfileCard({
     super.key,
     this.name,
-    this.image,
-    this.mail
+    this.mail,
+    required this.image,
+    this.onEdit,
+    this.hasAccount = true,
   });
 
   final String? name;
   final String? mail;
-  final ImageProvider? image;
+  final ImageProvider image;
+  final VoidCallback? onEdit;
+  final bool hasAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -26,20 +32,48 @@ class ProfileCard extends StatelessWidget {
             backgroundImage: image,
           ),
           const SizedBox(height: 12),
-          Text(
-              name!,
+          hasAccount
+              ? Text(
+            name ?? '',
             style: Theme.of(context).textTheme.bodyLarge,
+          )
+              : const Text(
+            'No account yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 6),
-          Text(
-            mail!,
+          hasAccount
+              ? Text(
+            mail ?? '',
             style: Theme.of(context).textTheme.bodySmall,
+          )
+              : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextButton(
+                onPressed: () {
+                  context.router.push(const RegisterRoute());
+                },
+                child: const Text('Create Account'),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () {
+                  context.router.push(LoginRoute());
+                },
+                child: const Text('Login'),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () {},
-            child: const Text('Edit profile'),
-          ),
+          if (hasAccount)
+            OutlinedButton(
+              onPressed: onEdit,
+              child: const Text('Edit profile'),
+            ),
         ],
       ),
     );
