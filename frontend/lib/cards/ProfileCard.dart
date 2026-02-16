@@ -22,6 +22,8 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const AssetImage fallbackAvatar = AssetImage('assets/profiles/profile.png');
+
     return Card(
       elevation: 0,
       color: Colors.transparent,
@@ -29,7 +31,9 @@ class ProfileCard extends StatelessWidget {
         children: <Widget>[
           CircleAvatar(
             radius: 48,
-            backgroundImage: image,
+            backgroundImage: fallbackAvatar,
+            foregroundImage: image,
+            onForegroundImageError: (_, __) {},
           ),
           const SizedBox(height: 12),
           hasAccount

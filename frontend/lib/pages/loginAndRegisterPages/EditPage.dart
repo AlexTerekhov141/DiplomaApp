@@ -1,15 +1,14 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:categorize_app/Routes/routes.gr.dart';
 import 'package:categorize_app/Widgets/AppAppBar.dart';
+import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
 import 'package:categorize_app/bloc/AuthBloc/bloc.dart';
 import 'package:categorize_app/bloc/AuthBloc/event.dart';
 import 'package:categorize_app/bloc/AuthBloc/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-
 
 @RoutePage()
 class EditPage extends StatelessWidget {
@@ -22,19 +21,19 @@ class EditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (BuildContext context, AuthState state) {
-            if (state.user.errorMessage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.user.errorMessage!)),
-              );
-            }
-            if (state.user.isSuccess) {
-              context.router.replace(const ProfileRoute());
-            }
-          },
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (BuildContext context, AuthState state) {
+          final String? errorMessage =
+              state.errorMessage ?? state.user.errorMessage;
+          if (errorMessage != null) {
+            _showErrorSnackBar(context, errorMessage);
+          }
+          if (state.user.isSuccess) {
+            context.router.maybePop();
+          }
+        },
+        child: ResponsiveFrame(
+          maxWidth: 680,
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -45,25 +44,34 @@ class EditPage extends StatelessWidget {
                     builder: (BuildContext context, AuthState state) {
                       return GestureDetector(
                         onTap: () async {
-                          /*final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                          final XFile? pickedFile = await _picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
                           if (pickedFile != null) {
                             context.read<AuthBloc>().add(
-                              AuthProfileImageUpdate(imagePath: pickedFile.path),
+                              AuthProfileImageUpdate(
+                                imagePath: pickedFile.path,
+                              ),
                             );
-                          }*/
+                          }
                         },
                         child: CircleAvatar(
                           radius: 48,
-                          backgroundImage: state.user.imagePath.isNotEmpty
-                              ? FileImage(File(state.user.imagePath))
-                              : const AssetImage('assets/profiles/profile.png') as ImageProvider,
+                          backgroundImage: const AssetImage(
+                            'assets/profiles/profile.png',
+                          ),
+                          foregroundImage: _resolveAvatarImage(
+                            state.user.imagePath,
+                          ),
+                          onForegroundImageError: (_, __) {},
                         ),
                       );
                     },
                   ),
                   const SizedBox(height: 20),
                   BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) => previous.user.email != current.user.email,
+                    buildWhen: (AuthState previous, AuthState current) =>
+                        previous.user.email != current.user.email,
                     builder: (BuildContext context, AuthState state) {
                       return TextFormField(
                         initialValue: state.user.email,
@@ -73,7 +81,8 @@ class EditPage extends StatelessWidget {
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (String? value) {
-                          if (value == null || value.isEmpty) return 'Please enter email';
+                          if (value == null || value.isEmpty)
+                            return 'Please enter email';
                           return null;
                         },
                         onChanged: (String value) {
@@ -84,7 +93,8 @@ class EditPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) => previous.user.username != current.user.username,
+                    buildWhen: (AuthState previous, AuthState current) =>
+                        previous.user.username != current.user.username,
                     builder: (BuildContext context, AuthState state) {
                       return TextFormField(
                         initialValue: state.user.username,
@@ -93,14 +103,17 @@ class EditPage extends StatelessWidget {
                           labelText: 'Username',
                         ),
                         onChanged: (String value) {
-                          context.read<AuthBloc>().add(AuthUsernameChanged(value));
+                          context.read<AuthBloc>().add(
+                            AuthUsernameChanged(value),
+                          );
                         },
                       );
                     },
                   ),
                   const SizedBox(height: 12),
                   BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) => previous.user.firstName != current.user.firstName,
+                    buildWhen: (AuthState previous, AuthState current) =>
+                        previous.user.firstName != current.user.firstName,
                     builder: (BuildContext context, AuthState state) {
                       return TextFormField(
                         initialValue: state.user.firstName,
@@ -109,14 +122,17 @@ class EditPage extends StatelessWidget {
                           labelText: 'First Name',
                         ),
                         onChanged: (String value) {
-                          context.read<AuthBloc>().add(AuthFirstNameChanged(value));
+                          context.read<AuthBloc>().add(
+                            AuthFirstNameChanged(value),
+                          );
                         },
                       );
                     },
                   ),
                   const SizedBox(height: 12),
                   BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) => previous.user.lastName != current.user.lastName,
+                    buildWhen: (AuthState previous, AuthState current) =>
+                        previous.user.lastName != current.user.lastName,
                     builder: (BuildContext context, AuthState state) {
                       return TextFormField(
                         initialValue: state.user.lastName,
@@ -125,7 +141,9 @@ class EditPage extends StatelessWidget {
                           labelText: 'Last Name',
                         ),
                         onChanged: (String value) {
-                          context.read<AuthBloc>().add(AuthLastNameChanged(value));
+                          context.read<AuthBloc>().add(
+                            AuthLastNameChanged(value),
+                          );
                         },
                       );
                     },
@@ -154,4 +172,56 @@ class EditPage extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showErrorSnackBar(BuildContext context, String message) {
+  final String clearMessage = message.replaceFirst('Exception: ', '');
+  final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: colorScheme.errorContainer,
+      content: Row(
+        children: <Widget>[
+          Icon(
+            Icons.error_outline_rounded,
+            color: colorScheme.onErrorContainer,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              clearMessage,
+              style: TextStyle(color: colorScheme.onErrorContainer),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+ImageProvider _resolveAvatarImage(String imagePath) {
+  const AssetImage fallback = AssetImage('assets/profiles/profile.png');
+
+  if (imagePath.isEmpty) {
+    return fallback;
+  }
+
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return NetworkImage(imagePath);
+  }
+
+  final File file = File(imagePath);
+  if (file.existsSync()) {
+    return FileImage(file);
+  }
+
+  if (imagePath.startsWith('assets/')) {
+    return AssetImage(imagePath);
+  }
+
+  return fallback;
 }

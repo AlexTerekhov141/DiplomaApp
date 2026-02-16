@@ -1,4 +1,5 @@
 import 'package:categorize_app/Routes/routegard.dart';
+import 'package:categorize_app/Themes/themes.dart';
 import 'package:categorize_app/bloc/themebloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import 'Routes/routes.dart';
 import 'bloc/themebloc/states.dart';
+
 final RouteGuard authGuard = RouteGuard();
 final AppRouter _appRouter = AppRouter(authGuard);
 
@@ -14,18 +16,20 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
+    final Themes themes = Themes();
     return BlocBuilder<ThemeBloc, ThemeState>(
-        builder: (BuildContext context, ThemeState state){
-          return MaterialApp.router(
-            routerConfig: _appRouter.config(
-                navigatorObservers: () => <NavigatorObserver>[
-                  TalkerRouteObserver(GetIt.I<Talker>()),
-                ]
-            ),
-            theme: state.themeData,
-
-          );
-        }
+      builder: (BuildContext context, ThemeState state) {
+        return MaterialApp.router(
+          routerConfig: _appRouter.config(
+            navigatorObservers: () => <NavigatorObserver>[
+              TalkerRouteObserver(GetIt.I<Talker>()),
+            ],
+          ),
+          theme: themes.lightTheme,
+          darkTheme: themes.darkTheme,
+          themeMode: state.themeMode,
+        );
+      },
     );
   }
 }

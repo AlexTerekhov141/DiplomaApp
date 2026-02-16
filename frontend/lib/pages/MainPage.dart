@@ -1,10 +1,10 @@
 import 'package:auto_route/annotations.dart';
 import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/BottomBar.dart';
+import 'package:categorize_app/pages/mainPages/ChatPage.dart';
 import 'package:categorize_app/pages/mainPages/Photos/FoldersPage.dart';
 import 'package:categorize_app/pages/mainPages/Photos/GalleryPage.dart';
 import 'package:flutter/material.dart';
-
 
 @RoutePage()
 class AppPage extends StatefulWidget {
@@ -15,7 +15,6 @@ class AppPage extends StatefulWidget {
 }
 
 class _AppPageState extends State<AppPage> {
-
   int _currentIndex = 0;
   late final PageController _pageController;
 
@@ -23,6 +22,12 @@ class _AppPageState extends State<AppPage> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -37,24 +42,19 @@ class _AppPageState extends State<AppPage> {
             _currentIndex = index;
           });
         },
-        children: const <Widget>[
-          GalleryPage(),
-          FoldersPage(),
-          Placeholder(),
-        ],
+        children: const <Widget>[GalleryPage(), FoldersPage(), ChatPage()],
       ),
       bottomNavigationBar: BottomBar(
-          currentIndex: _currentIndex,
-          onTap: (int index) {
-            _pageController.animateToPage(
-              index,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.ease,
-            );
-            setState(() => _currentIndex = index);
-          },
-        ),
-
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.ease,
+          );
+          setState(() => _currentIndex = index);
+        },
+      ),
     );
   }
 }

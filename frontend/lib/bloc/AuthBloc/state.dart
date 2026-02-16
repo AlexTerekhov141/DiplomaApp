@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../../models/User.dart';
 
+const Object _errorMessageUnchanged = Object();
+
 class AuthState extends Equatable {
 
   const AuthState({
@@ -20,13 +22,15 @@ class AuthState extends Equatable {
     User? user,
     bool? isLoading,
     bool? isAuthenticated,
-    String? errorMessage,
+    Object? errorMessage = _errorMessageUnchanged,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      errorMessage: errorMessage,
+      errorMessage: identical(errorMessage, _errorMessageUnchanged)
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 

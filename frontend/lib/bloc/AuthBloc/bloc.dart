@@ -50,6 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           user: profile,
           isLoading: false,
           isAuthenticated: true,
+          errorMessage: null,
         ));
       } catch (e,st) {
         emit(state.copyWith(
@@ -72,6 +73,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           user: profile,
           isLoading: false,
           isAuthenticated: true,
+          errorMessage: null,
         ));
       } catch (e) {
         emit(state.copyWith(
@@ -89,7 +91,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<AuthLogout>((AuthLogout event, Emitter<AuthState> emit) async {
-      await authRepository.logout();
+      try {
+        await authRepository.logout();
+      } catch (_) {}
       emit(AuthState.initial());
     });
 
@@ -131,8 +135,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         await authRepository.updateProfile(updatedUser);
+        final User profile = await authRepository.fetchProfile();
+        final String currentImagePath = state.user.imagePath;
+        final bool hasLocalImagePath = currentImagePath.isNotEmpty &&
+            !currentImagePath.startsWith('http://') &&
+            !currentImagePath.startsWith('https://') &&
+            !currentImagePath.startsWith('assets/') &&
+            !currentImagePath.startsWith('/media/');
+        final String imagePath = hasLocalImagePath ? currentImagePath : profile.imagePath;
 
-        emit(state.copyWith(user: updatedUser.copyWith(isSubmitting: false, isSuccess: true)));
+        emit(state.copyWith(
+          user: profile.copyWith(
+            imagePath: imagePath,
+            isSubmitting: false,
+            isSuccess: true,
+          ),
+        ));
       } catch (e) {
         emit(state.copyWith(user: state.user.copyWith(isSubmitting: false, isSuccess: false, errorMessage: e.toString())));
       }
@@ -140,16 +158,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<AuthProfileImageUpdate>((AuthProfileImageUpdate event, Emitter<AuthState> emit) async {
       emit(state.copyWith(
-          user: state.user.copyWith(isSubmitting: true, errorMessage: null)));
+          user: state.user.copyWith(isSubmitting: true, errorMessage: null, isSuccess: false)));
 
       try {
         final User updatedUser = state.user.copyWith(imagePath: event.imagePath);
 
-
-        await authRepository.updateProfile(updatedUser);
-
         emit(state.copyWith(
-            user: updatedUser.copyWith(isSubmitting: false, isSuccess: true)));
+            user: updatedUser.copyWith(isSubmitting: false, isSuccess: false)));
       } catch (e) {
         emit(state.copyWith(
             user: state.user.copyWith(

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -25,55 +26,60 @@ class _FoldersPageState extends State<FoldersPage>
     super.build(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: <Widget>[
-              const _Buttons(),
-              const SizedBox(height: 16),
+      body: ResponsiveFrame(
+        maxWidth: 1100,
+        child: Column(
+          children: <Widget>[
+            const _Buttons(),
+            const SizedBox(height: 16),
 
-              Expanded(
-                child: BlocBuilder<FoldersBloc, FoldersState>(
-                  builder: (BuildContext context, FoldersState state) {
-                    if (state.isLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
+            Expanded(
+              child: BlocBuilder<FoldersBloc, FoldersState>(
+                builder: (BuildContext context, FoldersState state) {
+                  if (state.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                    if (state.error != null) {
-                      return Center(
-                        child: Text(
-                          state.error!,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      );
-                    }
-
-                    if (state.folders.isEmpty) {
-                      return const Center(
-                        child: Text('No folders yet'),
-                      );
-                    }
-
-                    return GridView.builder(
-                      gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                  if (state.error != null) {
+                    return Center(
+                      child: Text(
+                        state.error!,
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      itemCount: state.folders.length,
-                      itemBuilder: (_, int index) {
-                        return _FolderTile(folder: state.folders[index]);
-                      },
                     );
-                  },
-                ),
+                  }
+
+                  if (state.folders.isEmpty) {
+                    return const Center(child: Text('No folders yet'));
+                  }
+
+                  return LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                          final int crossAxisCount =
+                              constraints.maxWidth >= 1000
+                              ? 4
+                              : constraints.maxWidth >= 700
+                              ? 3
+                              : 2;
+                          return GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                ),
+                            itemCount: state.folders.length,
+                            itemBuilder: (_, int index) {
+                              return _FolderTile(folder: state.folders[index]);
+                            },
+                          );
+                        },
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -81,7 +87,6 @@ class _FoldersPageState extends State<FoldersPage>
 }
 
 class _FolderTile extends StatelessWidget {
-
   const _FolderTile({required this.folder});
   final Folder folder;
 
@@ -98,9 +103,7 @@ class _FolderTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.dividerColor.withOpacity(0.2),
-          ),
+          border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),

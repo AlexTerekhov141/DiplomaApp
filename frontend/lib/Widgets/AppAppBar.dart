@@ -7,16 +7,12 @@ import '../bloc/themebloc/bloc.dart';
 import '../bloc/themebloc/events.dart';
 import '../bloc/themebloc/states.dart';
 
-
-class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
+class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-        leading: const Icon(Icons.add),
-        actions:<Widget>[
-          _ProfileWidget(context),
-          _switchTheme(),
-        ]
+      leading: const Icon(Icons.add),
+      actions: <Widget>[_ProfileWidget(context), _switchTheme()],
     );
   }
 
@@ -24,14 +20,12 @@ class AppAppBar extends StatelessWidget  implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-
-Widget _switchTheme(){
-  return  BlocBuilder<ThemeBloc, ThemeState>(
+Widget _switchTheme() {
+  return BlocBuilder<ThemeBloc, ThemeState>(
     builder: (BuildContext context, ThemeState state) {
+      final bool isDark = state.themeMode == ThemeMode.dark;
       return IconButton(
-        icon: Icon(
-          state.isLight ? Icons.dark_mode : Icons.light_mode,
-        ),
+        icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
         onPressed: () {
           context.read<ThemeBloc>().add(ToggleThemeEvent());
         },
@@ -39,12 +33,12 @@ Widget _switchTheme(){
     },
   );
 }
-Widget _ProfileWidget(BuildContext context){
-  return  IconButton(
-      onPressed: () {
-        context.router.push(const ProfileRoute());
-      },
-      icon: const Icon(Icons.person)
+
+Widget _ProfileWidget(BuildContext context) {
+  return IconButton(
+    onPressed: () {
+      context.router.push(const ProfileRoute());
+    },
+    icon: const Icon(Icons.person),
   );
 }
-

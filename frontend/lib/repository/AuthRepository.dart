@@ -1,11 +1,62 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../constants/app_config.dart';
 import '../models/User.dart';
 class AuthRepository {
   AuthRepository({required this.dio, required this.storage});
   final Dio dio;
   final FlutterSecureStorage storage;
+  String get _baseUrl => AppConfig.apiBaseUrl.endsWith('/')
+      ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1)
+      : AppConfig.apiBaseUrl;
+
+  String get _registerUrl => '$_baseUrl/api/auth/register/';
+  String get _loginUrl => '$_baseUrl/api/auth/login/';
+  String get _profileUrl => '$_baseUrl/api/auth/profile/';
+  String get _logoutUrl => '$_baseUrl/api/auth/logout/';
+  String get _refreshUrl => '$_baseUrl/api/auth/refresh/';
+
+  String _normalizeAvatarUrl(dynamic avatarValue) {
+    if (avatarValue == null) {
+      return '';
+    }
+    final String avatar = avatarValue.toString().trim();
+    if (avatar.isEmpty) {
+      return '';
+    }
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+      return avatar;
+    }
+    if (avatar.startsWith('/')) {
+      return '$_baseUrl$avatar';
+    }
+    if (avatar.startsWith('media/')) {
+      return '$_baseUrl/$avatar';
+    }
+    return '$_baseUrl/media/$avatar';
+  }
+
+  String _toUserMessage(DioException e) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.connectionError) {
+      return 'Please check your internet connection and try again.';
+    }
+
+    final int? statusCode = e.response?.statusCode;
+    if (statusCode == 401) {
+      return 'Incorrect email or password.';
+    }
+    if (statusCode != null && statusCode >= 500) {
+      return 'Server is temporarily unavailable. Please try again later.';
+    }
+
+    return 'Something went wrong. Please try again.';
+  }
 
   Future<void> register(User user) async {
     final Map<String, String> data = <String, String>{
@@ -19,7 +70,7 @@ class AuthRepository {
 
     try {
       final Response<dynamic> response = await dio.post(
-        'http://192.168.1.97:8000/api/auth/register/',
+        _registerUrl,
         data: data,
         options: Options(
           headers: <String, dynamic>{'Content-Type': 'application/json'},
@@ -35,9 +86,9 @@ class AuthRepository {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        throw Exception('Registration error: ${e.response?.data}');
+        throw Exception(_toUserMessage(e));
       } else {
-        throw Exception('Registration error: ${e.message}');
+        throw Exception(_toUserMessage(e));
       }
     }
   }
@@ -52,7 +103,7 @@ class AuthRepository {
 
     try {
       final Response<dynamic> response = await dio.post(
-        'http://192.168.1.97:8000/api/auth/login/',
+        _loginUrl,
         data: data,
         options: Options(headers: <String, dynamic>{'Content-Type': 'application/json'}),
       );
@@ -64,13 +115,7 @@ class AuthRepository {
         throw Exception('Login error: ${response.data}');
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw Exception('Incorrect login or password');
-      } else if (e.response != null) {
-        throw Exception('Login error: ${e.response?.data}');
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
+      throw Exception(_toUserMessage(e));
     }
   }
 
@@ -80,7 +125,7 @@ class AuthRepository {
     if (accessToken == null) throw Exception('No token');
 
     final Response<dynamic> response = await dio.get(
-      'http://192.168.1.97:8000/api/auth/profile/',
+      _profileUrl,
       options: Options(headers: <String, dynamic>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
@@ -94,7 +139,7 @@ class AuthRepository {
         username: data['username'],
         firstName: data['first_name'],
         lastName: data['last_name'],
-        imagePath: data['avatar'] ?? '',
+        imagePath: _normalizeAvatarUrl(data['avatar']),
         password: '',
         passwordConfirm: '',
       );
@@ -112,16 +157,18 @@ class AuthRepository {
   Future<void> logout() async {
     final String? accessToken = await storage.read(key: 'access_token');
 
-    await dio.post(
-      'http://192.168.1.97:8000/api/auth/logout/',
-      options: Options(headers: <String, dynamic>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      }),
-    );
-
-    await storage.delete(key: 'access_token');
-    await storage.delete(key: 'refresh_token');
+    try {
+      await dio.post(
+        _logoutUrl,
+        options: Options(headers: <String, dynamic>{
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        }),
+      );
+    } finally {
+      await storage.delete(key: 'access_token');
+      await storage.delete(key: 'refresh_token');
+    }
   }
 
   Future<String?> refreshAccessToken() async {
@@ -129,7 +176,7 @@ class AuthRepository {
     if (refreshToken == null) return null;
 
       final Response<dynamic> response = await dio.post(
-        'http://192.168.1.97:8000/api/auth/refresh/',
+        _refreshUrl,
         data: <String, String>{'refresh': refreshToken},
         options: Options(headers: <String, dynamic>{'Content-Type': 'application/json'}),
       );
@@ -148,19 +195,32 @@ class AuthRepository {
     final String? accessToken = await storage.read(key: 'access_token');
     if (accessToken == null) throw Exception('No token');
 
-    final Map<String, String> data = <String, String>{
+    final FormData data = FormData.fromMap(<String, dynamic>{
       'email': updatedUser.email,
       'username': updatedUser.username,
       'first_name': updatedUser.firstName,
       'last_name': updatedUser.lastName,
-    };
+    });
+
+    final File avatarFile = File(updatedUser.imagePath);
+    if (updatedUser.imagePath.isNotEmpty && avatarFile.existsSync()) {
+      data.files.add(
+        MapEntry<String, MultipartFile>(
+          'avatar',
+          MultipartFile.fromFileSync(
+            updatedUser.imagePath,
+            filename: updatedUser.imagePath.split(Platform.pathSeparator).last,
+          ),
+        ),
+      );
+    }
 
     try {
       final Response<dynamic> response = await dio.put(
-        'http://192.168.1.97:8000/api/auth/profile/',
+        _profileUrl,
         data: data,
         options: Options(headers: <String, dynamic>{
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           'Authorization': 'Bearer $accessToken',
         }),
       );
@@ -169,11 +229,7 @@ class AuthRepository {
         throw Exception('Profile update error: ${response.data}');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
-        throw Exception('Profile update error: ${e.response?.data}');
-      } else {
-        throw Exception('Network error: ${e.message}');
-      }
+      throw Exception(_toUserMessage(e));
     }
   }
 

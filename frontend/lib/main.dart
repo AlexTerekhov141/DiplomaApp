@@ -23,53 +23,83 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import 'app.dart';
 import 'bloc/AuthBloc/event.dart';
+import 'bloc/themebloc/events.dart';
 
 Future<void> main() async {
   final Talker talker = TalkerFlutter.init();
-  final Dio dio = Dio();
+  final Dio dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+    ),
+  );
   const FlutterSecureStorage storage = FlutterSecureStorage();
   GetIt.I.registerSingleton<Talker>(talker);
   GetIt.I.registerSingleton<Dio>(dio);
   GetIt.I.registerSingleton<FlutterSecureStorage>(storage);
-  FlutterError.onError = (FlutterErrorDetails details) => GetIt.I<Talker>().handle(details.exception, details.stack);
+  FlutterError.onError = (FlutterErrorDetails details) =>
+      GetIt.I<Talker>().handle(details.exception, details.stack);
 
   dio.interceptors.add(
-      TalkerDioLogger(
-        settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printResponseMessage: true,
-        ),
-      )
+    TalkerDioLogger(
+      settings: const TalkerDioLoggerSettings(
+        printRequestHeaders: true,
+        printResponseHeaders: true,
+        printResponseMessage: true,
+      ),
+    ),
   );
 
   Bloc.observer = TalkerBlocObserver();
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    GetIt.I<Talker>().debug('started');
+      GetIt.I<Talker>().debug('started');
 
-    GetIt.I.registerLazySingleton<AuthRepository>(
-          () => AuthRepository(dio: GetIt.I<Dio>(), storage: GetIt.I<FlutterSecureStorage>()),
-    );
+      GetIt.I.registerLazySingleton<AuthRepository>(
+        () => AuthRepository(
+          dio: GetIt.I<Dio>(),
+          storage: GetIt.I<FlutterSecureStorage>(),
+        ),
+      );
 
-    runApp(
+      runApp(
         MultiBlocProvider(
-            providers: <SingleChildWidget>[
-              BlocProvider(create: (_) => PhotosBloc()..add(PhotosLoadEvent())),
-              BlocProvider(create: (_) => ThemeBloc()),
-              BlocProvider(create: (_) => FoldersBloc(FolderTagsRepository())..add(LoadFolders())),
-              BlocProvider(create: (BuildContext context) => StatisticsBloc(photosBloc: context.read<PhotosBloc>(), foldersBloc: context.read<FoldersBloc>())..add(LoadStatistics())),
-              BlocProvider(create: (BuildContext context) {
-                  final AuthBloc authBloc = AuthBloc(authRepository: GetIt.I<AuthRepository>());
-                  authBloc.add(AuthStarted());
-                  return authBloc;
-                },
-              ),
-            ],
-            child: const MyApp())
-    );
-  }, (Object error, StackTrace stack) {
-  GetIt.I<Talker>().handle(error, stack);
-  });
+          providers: <SingleChildWidget>[
+            BlocProvider(create: (_) => PhotosBloc()..add(PhotosLoadEvent())),
+            BlocProvider(
+              create: (_) =>
+                  ThemeBloc(storage: GetIt.I<FlutterSecureStorage>())
+                    ..add(LoadThemeSettingsEvent()),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  FoldersBloc(FolderTagsRepository())..add(LoadFolders()),
+            ),
+            BlocProvider(
+              create: (BuildContext context) => StatisticsBloc(
+                photosBloc: context.read<PhotosBloc>(),
+                foldersBloc: context.read<FoldersBloc>(),
+              )..add(LoadStatistics()),
+            ),
+            BlocProvider(
+              create: (BuildContext context) {
+                final AuthBloc authBloc = AuthBloc(
+                  authRepository: GetIt.I<AuthRepository>(),
+                );
+                authBloc.add(AuthStarted());
+                return authBloc;
+              },
+            ),
+          ],
+          child: const MyApp(),
+        ),
+      );
+    },
+    (Object error, StackTrace stack) {
+      GetIt.I<Talker>().handle(error, stack);
+    },
+  );
 }
