@@ -1,0 +1,7 @@
+./dataset
+./balanced_dataset
+*.png
+*.jpg
+*.jpeg
+idea.txt
+*.py

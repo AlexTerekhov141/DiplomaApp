@@ -15,6 +15,7 @@ from .serializers import (
     PhotoUpdateSerializer,
     TagSerializer,
 )
+from .tasks import process_photo_task, process_photos_bulk
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
@@ -75,6 +76,10 @@ class PhotoViewSet(viewsets.ModelViewSet):
             return BulkPhotoUploadSerializer
         return PhotoCreateSerializer
 
+    def perform_create(self, serializer):
+        photo = serializer.save()
+        process_photo_task.delay(photo.pk)
+
     @action(detail=False, methods=["post"], url_path="bulk-upload")
     def bulk_upload(self, request):
         """
@@ -100,8 +105,21 @@ class PhotoViewSet(viewsets.ModelViewSet):
                 photo.tags.set(tags)
             photos.append(photo)
 
+        process_photos_bulk.delay([p.pk for p in photos])
+
         result = PhotoListSerializer(photos, many=True, context={"request": request})
         return Response(result.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="analyze")
+    def analyze(self, request, pk=None):
+        """
+        Запустить ML-анализ для фото
+
+        POST /api/photos/{id}/analyze/
+        """
+        photo = self.get_object()
+        process_photo_task.delay(photo.pk)
+        return Response({"status": "processing"}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["get"], url_path="best")
     def best(self, request):

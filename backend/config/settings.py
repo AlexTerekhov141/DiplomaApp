@@ -172,3 +172,12 @@ CORS_ALLOW_CREDENTIALS = True
 # Celery
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 300
+
+# ML
+ML_MODEL_PATH = env.str("ML_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "photo_classifier.h5"))
