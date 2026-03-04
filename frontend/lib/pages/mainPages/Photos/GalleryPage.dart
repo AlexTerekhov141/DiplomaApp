@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:categorize_app/Routes/routes.gr.dart';
 import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
+import 'package:categorize_app/bloc/FoldersBloc/bloc.dart';
+import 'package:categorize_app/bloc/FoldersBloc/events.dart';
 import 'package:categorize_app/bloc/PhotosBloc/bloc.dart';
 import 'package:categorize_app/bloc/themebloc/bloc.dart';
 import 'package:categorize_app/bloc/themebloc/states.dart';
@@ -31,7 +33,19 @@ class _GalleryPageState extends State<GalleryPage>
         maxWidth: 1200,
         mobilePadding: EdgeInsets.zero,
         desktopPadding: EdgeInsets.zero,
-        child: BlocBuilder<PhotosBloc, PhotosState>(
+        child: BlocConsumer<PhotosBloc, PhotosState>(
+          listener: (BuildContext context, PhotosState state) {
+            if (state.syncError != null && state.syncError!.isNotEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Upload error: ${state.syncError}')),
+              );
+            } else if (!state.isSyncing && state.uploadedCount > 0) {
+              context.read<FoldersBloc>().add(LoadFolders());
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Uploaded photos: ${state.uploadedCount}')),
+              );
+            }
+          },
           builder: (BuildContext context, PhotosState state) {
             if (state.isLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -45,8 +59,8 @@ class _GalleryPageState extends State<GalleryPage>
                 final int baseCount = constraints.maxWidth >= 1000
                     ? 6
                     : constraints.maxWidth >= 700
-                    ? 4
-                    : 3;
+                        ? 4
+                        : 3;
                 final GalleryGridSize gridSize = context.select(
                   (ThemeBloc bloc) => bloc.state.gridSize,
                 );

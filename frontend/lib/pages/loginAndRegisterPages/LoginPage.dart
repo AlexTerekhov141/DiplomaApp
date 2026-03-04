@@ -23,10 +23,7 @@ class LoginPage extends StatelessWidget {
     if (isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
-          context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const AppRoute(),
-            const ProfileRoute(),
-          ]);
+          context.router.replaceAll(<PageRouteInfo<dynamic>>[const AppRoute()]);
         }
       });
     }
@@ -39,10 +36,7 @@ class LoginPage extends StatelessWidget {
             _showErrorSnackBar(context, state.errorMessage!);
           }
           if (state.isAuthenticated) {
-            context.router.replaceAll(<PageRouteInfo<dynamic>>[
-              const AppRoute(),
-              const ProfileRoute(),
-            ]);
+            context.router.replaceAll(<PageRouteInfo<dynamic>>[const AppRoute()]);
           }
         },
         child: ResponsiveFrame(

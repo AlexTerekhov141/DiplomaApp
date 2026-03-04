@@ -27,3 +27,22 @@ class PhotoViewerPage extends StatelessWidget {
     );
   }
 }
+
+class NetworkPhotoViewerPage extends StatelessWidget {
+  const NetworkPhotoViewerPage({super.key, required this.imageUrl});
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black),
+      body: PhotoView(
+        imageProvider: NetworkImage(imageUrl),
+        backgroundDecoration: const BoxDecoration(
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+}

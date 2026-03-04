@@ -6,7 +6,10 @@ class PhotosState extends Equatable {
   const PhotosState({
     required this.photos,
     this.isLoading = false,
+    this.isSyncing = false,
+    this.uploadedCount = 0,
     this.error,
+    this.syncError,
   });
 
   factory PhotosState.initial() {
@@ -14,20 +17,36 @@ class PhotosState extends Equatable {
   }
   final List<AssetEntity> photos;
   final bool isLoading;
+  final bool isSyncing;
+  final int uploadedCount;
   final String? error;
+  final String? syncError;
 
   PhotosState copyWith({
     List<AssetEntity>? photos,
     bool? isLoading,
+    bool? isSyncing,
+    int? uploadedCount,
     String? error,
+    String? syncError,
   }) {
     return PhotosState(
       photos: photos ?? this.photos,
       isLoading: isLoading ?? this.isLoading,
+      isSyncing: isSyncing ?? this.isSyncing,
+      uploadedCount: uploadedCount ?? this.uploadedCount,
       error: error,
+      syncError: syncError,
     );
   }
 
   @override
-  List<Object?> get props => <Object?>[photos, isLoading, error];
+  List<Object?> get props => <Object?>[
+    photos,
+    isLoading,
+    isSyncing,
+    uploadedCount,
+    error,
+    syncError,
+  ];
 }

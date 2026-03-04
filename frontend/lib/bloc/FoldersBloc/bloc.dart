@@ -9,6 +9,7 @@ class FoldersBloc extends Bloc<FoldersEvent, FoldersState> {
 
   FoldersBloc(this.repository) : super(const FoldersState()) {
     on<LoadFolders>(_onLoadFolders);
+    on<ClearFolders>(_onClearFolders);
   }
   final FolderTagsRepository repository;
 
@@ -30,5 +31,12 @@ class FoldersBloc extends Bloc<FoldersEvent, FoldersState> {
         error: e.toString(),
       ));
     }
+  }
+
+  void _onClearFolders(
+    ClearFolders event,
+    Emitter<FoldersState> emit,
+  ) {
+    emit(const FoldersState());
   }
 }

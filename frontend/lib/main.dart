@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:categorize_app/bloc/AuthBloc/bloc.dart';
 import 'package:categorize_app/bloc/FoldersBloc/bloc.dart';
-import 'package:categorize_app/bloc/FoldersBloc/events.dart';
 import 'package:categorize_app/bloc/PhotosBloc/bloc.dart';
-import 'package:categorize_app/bloc/PhotosBloc/events.dart';
 import 'package:categorize_app/bloc/StatisticsBloc/bloc.dart';
 import 'package:categorize_app/bloc/StatisticsBloc/events.dart';
 import 'package:categorize_app/bloc/themebloc/bloc.dart';
 import 'package:categorize_app/repository/AuthRepository.dart';
 import 'package:categorize_app/repository/FolderTagsRepository.dart';
+import 'package:categorize_app/repository/PhotosRepository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -64,11 +63,21 @@ Future<void> main() async {
           storage: GetIt.I<FlutterSecureStorage>(),
         ),
       );
+      GetIt.I.registerLazySingleton<PhotosRepository>(
+        () => PhotosRepository(
+          dio: GetIt.I<Dio>(),
+          storage: GetIt.I<FlutterSecureStorage>(),
+        ),
+      );
 
       runApp(
         MultiBlocProvider(
           providers: <SingleChildWidget>[
-            BlocProvider(create: (_) => PhotosBloc()..add(PhotosLoadEvent())),
+            BlocProvider(
+              create: (_) => PhotosBloc(
+                photosRepository: GetIt.I<PhotosRepository>(),
+              ),
+            ),
             BlocProvider(
               create: (_) =>
                   ThemeBloc(storage: GetIt.I<FlutterSecureStorage>())
@@ -76,7 +85,9 @@ Future<void> main() async {
             ),
             BlocProvider(
               create: (_) =>
-                  FoldersBloc(FolderTagsRepository())..add(LoadFolders()),
+                  FoldersBloc(
+                    FolderTagsRepository(GetIt.I<PhotosRepository>()),
+                  ),
             ),
             BlocProvider(
               create: (BuildContext context) => StatisticsBloc(
