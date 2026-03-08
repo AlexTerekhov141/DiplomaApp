@@ -20,7 +20,9 @@ class FoldersBloc extends Bloc<FoldersEvent, FoldersState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final FolderResponse response = await repository.fetchFolders();
+      final FolderResponse response = await repository.fetchFolders(
+        forceRefresh: event.forceRefresh,
+      );
       emit(state.copyWith(
         isLoading: false,
         folders: response.folders,

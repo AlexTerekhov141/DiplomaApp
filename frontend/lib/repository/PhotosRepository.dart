@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -103,18 +103,30 @@ class PhotosRepository {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getPhotos({String? tag}) async {
+  Future<List<Map<String, dynamic>>> getPhotos({
+    String? tag,
+    bool? isProcessed,
+    bool forceRefresh = false,
+  }) async {
     final String? token = await _readAccessToken();
-    final String cacheKey = '${token ?? ''}|${tag ?? ''}';
-    final List<Map<String, dynamic>>? cached = _photosCache[cacheKey];
+    final String cacheKey =
+        '${token ?? ''}|${tag ?? ''}|${isProcessed?.toString() ?? ''}';
+    final List<Map<String, dynamic>>? cached =
+        forceRefresh ? null : _photosCache[cacheKey];
     if (cached != null) {
       return List<Map<String, dynamic>>.from(cached);
     }
 
     final List<Map<String, dynamic>> allPhotos = <Map<String, dynamic>>[];
     String? nextUrl = _photosUrl;
-    Map<String, dynamic>? nextQuery =
-        tag == null ? null : <String, dynamic>{'tag': tag};
+    final Map<String, dynamic> firstQuery = <String, dynamic>{};
+    if (tag != null && tag.isNotEmpty) {
+      firstQuery['tag'] = tag;
+    }
+    if (isProcessed != null) {
+      firstQuery['is_processed'] = isProcessed.toString();
+    }
+    Map<String, dynamic>? nextQuery = firstQuery.isEmpty ? null : firstQuery;
 
     while (nextUrl != null) {
       final Response<dynamic> response = await _withAuthRetry<Response<dynamic>>(
@@ -231,6 +243,50 @@ class PhotosRepository {
       return data.length;
     }
     return 0;
+  }
+
+  Future<Map<String, int>> getRemoteProcessingStats() async {
+    final Response<dynamic> totalResponse = await _withAuthRetry<Response<dynamic>>(
+      () async => dio.get(
+        _photosUrl,
+        options: (await _authorizedJsonOptions()).copyWith(
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      ),
+    );
+    final Response<dynamic> processedResponse =
+        await _withAuthRetry<Response<dynamic>>(
+      () async => dio.get(
+        _photosUrl,
+        queryParameters: const <String, dynamic>{'is_processed': 'true'},
+        options: (await _authorizedJsonOptions()).copyWith(
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      ),
+    );
+
+    int extractCount(dynamic data) {
+      if (data is Map<String, dynamic>) {
+        final dynamic count = data['count'];
+        if (count is int) {
+          return count;
+        }
+        return int.tryParse(count?.toString() ?? '') ?? 0;
+      }
+      if (data is List<dynamic>) {
+        return data.length;
+      }
+      return 0;
+    }
+
+    final int total = extractCount(totalResponse.data);
+    final int processed = extractCount(processedResponse.data);
+    final int pending = total - processed > 0 ? total - processed : 0;
+    return <String, int>{
+      'total': total,
+      'processed': processed,
+      'pending': pending,
+    };
   }
 
   Future<int> bulkUploadLocalPhotos(List<AssetEntity> assets) async {

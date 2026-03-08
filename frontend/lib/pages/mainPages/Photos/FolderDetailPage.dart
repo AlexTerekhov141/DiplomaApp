@@ -23,7 +23,9 @@ class _FolderDetailsPageState extends State<FolderDetailsPage> {
 
   Future<List<String>> _loadFolderPhotos() async {
     final PhotosRepository repository = GetIt.I<PhotosRepository>();
-    final List<Map<String, dynamic>> photos = await repository.getPhotos();
+    final List<Map<String, dynamic>> photos = await repository.getPhotos(
+      isProcessed: true,
+    );
 
     final bool isUncategorized = widget.folder.id == 'uncategorized';
 
@@ -75,11 +77,11 @@ class _FolderDetailsPageState extends State<FolderDetailsPage> {
 
             return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-                final int baseCount = constraints.maxWidth >= 900
-                    ? 4
-                    : constraints.maxWidth >= 600
-                        ? 3
-                        : 2;
+                final int baseCount = constraints.maxWidth >= 1000
+                    ? 6
+                    : constraints.maxWidth >= 700
+                        ? 4
+                        : 3;
                 final GalleryGridSize gridSize = context.select(
                   (ThemeBloc bloc) => bloc.state.gridSize,
                 );

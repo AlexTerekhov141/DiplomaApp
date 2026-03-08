@@ -12,6 +12,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     on<PhotosLoadEvent>(_onLoadPhotos);
     on<PhotosSyncToServerEvent>(_onSyncPhotosToServer);
     on<PhotosResetEvent>(_onReset);
+    on<PhotosRefreshProcessingStatusEvent>(_onRefreshProcessingStatus);
   }
   final PhotosRepository photosRepository;
 
@@ -85,6 +86,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
           error: null,
         ),
       );
+      add(PhotosRefreshProcessingStatusEvent());
       add(PhotosSyncToServerEvent(allPhotos));
     } on MissingPluginException {
       emit(state.copyWith(
@@ -108,15 +110,42 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
       final int uploaded = await photosRepository.bulkUploadLocalPhotos(event.photos);
       emit(state.copyWith(
         isSyncing: false,
-        uploadedCount: state.uploadedCount + uploaded,
+        uploadedCount: uploaded,
         syncError: null,
       ));
+      add(PhotosRefreshProcessingStatusEvent());
     } catch (e) {
       final String message = e.toString();
       final bool noToken = message.contains('No token');
       emit(state.copyWith(
         isSyncing: false,
         syncError: noToken ? null : message,
+      ));
+      add(PhotosRefreshProcessingStatusEvent());
+    }
+  }
+
+  Future<void> _onRefreshProcessingStatus(
+    PhotosRefreshProcessingStatusEvent event,
+    Emitter<PhotosState> emit,
+  ) async {
+    emit(state.copyWith(isProcessingStatusLoading: true));
+    try {
+      final Map<String, int> stats =
+          await photosRepository.getRemoteProcessingStats();
+      emit(state.copyWith(
+        isProcessingStatusLoading: false,
+        remoteTotalCount: stats['total'] ?? 0,
+        remoteProcessedCount: stats['processed'] ?? 0,
+        remotePendingCount: stats['pending'] ?? 0,
+      ));
+    } catch (e) {
+      final bool noToken = e.toString().contains('No token');
+      emit(state.copyWith(
+        isProcessingStatusLoading: false,
+        remoteTotalCount: noToken ? 0 : state.remoteTotalCount,
+        remoteProcessedCount: noToken ? 0 : state.remoteProcessedCount,
+        remotePendingCount: noToken ? 0 : state.remotePendingCount,
       ));
     }
   }

@@ -10,3 +10,5 @@ class PhotosSyncToServerEvent extends PhotosEvent {
 }
 
 class PhotosResetEvent extends PhotosEvent {}
+
+class PhotosRefreshProcessingStatusEvent extends PhotosEvent {}

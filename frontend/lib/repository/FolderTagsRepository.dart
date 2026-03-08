@@ -8,9 +8,12 @@ class FolderTagsRepository {
   FolderTagsRepository(this.photosRepository);
   final PhotosRepository photosRepository;
 
-  Future<FolderResponse> fetchFolders() async {
+  Future<FolderResponse> fetchFolders({bool forceRefresh = false}) async {
     try {
-      final List<Map<String, dynamic>> photos = await photosRepository.getPhotos();
+      final List<Map<String, dynamic>> photos = await photosRepository.getPhotos(
+        isProcessed: true,
+        forceRefresh: forceRefresh,
+      );
       final Map<String, Folder> grouped = <String, Folder>{};
 
       for (final Map<String, dynamic> photo in photos) {
@@ -18,22 +21,33 @@ class FolderTagsRepository {
         final Map<String, dynamic>? category = rawCategory is Map<String, dynamic>
             ? rawCategory
             : null;
+        final String imageUrl = (photo['image'] ?? '').toString();
 
         final String folderId = category?['id']?.toString() ?? 'uncategorized';
         final String folderName = category?['name']?.toString() ?? 'Uncategorized';
 
         final Folder? existing = grouped[folderId];
         if (existing == null) {
+          final List<String> previewUrls = <String>[];
+          if (imageUrl.isNotEmpty) {
+            previewUrls.add(imageUrl);
+          }
           grouped[folderId] = Folder(
             id: folderId,
             name: folderName,
             photosCount: 1,
+            previewUrls: previewUrls,
           );
         } else {
+          final List<String> previewUrls = List<String>.from(existing.previewUrls);
+          if (imageUrl.isNotEmpty && previewUrls.length < 4) {
+            previewUrls.add(imageUrl);
+          }
           grouped[folderId] = Folder(
             id: existing.id,
             name: existing.name,
             photosCount: existing.photosCount + 1,
+            previewUrls: previewUrls,
           );
         }
       }
