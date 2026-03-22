@@ -9,10 +9,12 @@ class AuthPasswordChanged extends AuthEvent {
   AuthPasswordChanged(this.password);
   final String password;
 }
+
 class AuthPasswordConfirmChanged extends AuthEvent {
   AuthPasswordConfirmChanged(this.passwordConfirm);
   final String passwordConfirm;
 }
+
 class AuthUsernameChanged extends AuthEvent {
   AuthUsernameChanged(this.username);
   final String username;
@@ -39,15 +41,21 @@ class AuthLogout extends AuthEvent {}
 class AuthStarted extends AuthEvent {}
 
 class AuthProfileUpdate extends AuthEvent {
+  AuthProfileUpdate({
+    this.firstName,
+    this.lastName,
+    this.username,
+  });
 
-  AuthProfileUpdate({this.firstName, this.lastName, this.username});
   final String? firstName;
   final String? lastName;
   final String? username;
 }
 
 class AuthProfileImageUpdate extends AuthEvent {
+  AuthProfileImageUpdate({
+    required this.imagePath,
+  });
 
-  AuthProfileImageUpdate({required this.imagePath});
   final String imagePath;
 }

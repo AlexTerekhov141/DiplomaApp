@@ -66,7 +66,7 @@ class ProfileCard extends StatelessWidget {
               const SizedBox(width: 8),
               TextButton(
                 onPressed: () {
-                  context.router.push(LoginRoute());
+                  context.router.push(const LoginRoute());
                 },
                 child: const Text('Login'),
               ),

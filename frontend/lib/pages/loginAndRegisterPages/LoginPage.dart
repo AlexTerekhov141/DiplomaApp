@@ -1,35 +1,64 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:categorize_app/Routes/routes.gr.dart';
-import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
 import 'package:categorize_app/bloc/AuthBloc/bloc.dart';
 import 'package:categorize_app/bloc/AuthBloc/event.dart';
 import 'package:categorize_app/bloc/AuthBloc/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+
+import '../onboarding/OnboardingView.dart';
 
 @RoutePage()
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  static const String _onboardingSeenKey = 'onboarding_seen_v1';
+
+  bool _isLoadingOnboarding = true;
+  bool _showOnboarding = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOnboardingState();
+  }
+
+  Future<void> _loadOnboardingState() async {
+    final FlutterSecureStorage storage = GetIt.I<FlutterSecureStorage>();
+    final String? seen = await storage.read(key: _onboardingSeenKey);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showOnboarding = seen != 'true';
+      _isLoadingOnboarding = false;
+    });
+  }
+
+  Future<void> _finishOnboarding() async {
+    final FlutterSecureStorage storage = GetIt.I<FlutterSecureStorage>();
+    await storage.write(key: _onboardingSeenKey, value: 'true');
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showOnboarding = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final bool isAuthenticated = context
-        .watch<AuthBloc>()
-        .state
-        .isAuthenticated;
-    if (isAuthenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          context.router.replaceAll(<PageRouteInfo<dynamic>>[const AppRoute()]);
-        }
-      });
-    }
-
     return Scaffold(
-      appBar: AppAppBar(),
+      //appBar: AppAppBar(),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           if (state.errorMessage != null) {
@@ -41,97 +70,133 @@ class LoginPage extends StatelessWidget {
         },
         child: ResponsiveFrame(
           maxWidth: 560,
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) =>
-                        previous.user.email != current.user.email,
-                    builder: (BuildContext context, AuthState state) {
-                      return TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Enter a login',
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your login';
-                          }
-                          return null;
-                        },
-                        onChanged: (String value) {
-                          context.read<AuthBloc>().add(AuthEmailChanged(value));
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) =>
-                        previous.user.password != current.user.password,
-                    builder: (BuildContext context, AuthState state) {
-                      return TextFormField(
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Enter a password',
-                        ),
-                        validator: (String? value) {
-                          if (value == null || value.length < 8) {
-                            return 'Password must be at least 8 characters';
-                          }
-                          return null;
-                        },
-                        onChanged: (String value) {
-                          context.read<AuthBloc>().add(
-                            AuthPasswordChanged(value),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    buildWhen: (AuthState previous, AuthState current) =>
-                        previous.isLoading != current.isLoading ||
-                        previous.user.email != current.user.email ||
-                        previous.user.password != current.user.password,
-                    builder: (BuildContext context, AuthState state) {
-                      if (state.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                context.read<AuthBloc>().add(
-                                  AuthLoginSubmitted(),
-                                );
-                              }
-                            },
-                            child: const Text('Login'),
+          child: _isLoadingOnboarding
+              ? const Center(child: CircularProgressIndicator())
+              : _showOnboarding
+                  ? OnboardingView(
+                      onDone: _finishOnboarding,
+                      onRegister: () async {
+                        await _finishOnboarding();
+                        if (!mounted) {
+                          return;
+                        }
+                        context.router.push(const RegisterRoute());
+                      },
+                    )
+                  : Form(
+                      key: _formKey,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              BlocBuilder<AuthBloc, AuthState>(
+                                buildWhen:
+                                    (AuthState previous, AuthState current) =>
+                                        previous.user.email !=
+                                        current.user.email,
+                                builder:
+                                    (BuildContext context, AuthState state) {
+                                  return TextFormField(
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintText: 'Enter a login',
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (String? value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your login';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (String value) {
+                                      context.read<AuthBloc>().add(
+                                            AuthEmailChanged(value),
+                                          );
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              BlocBuilder<AuthBloc, AuthState>(
+                                buildWhen:
+                                    (AuthState previous, AuthState current) =>
+                                        previous.user.password !=
+                                        current.user.password,
+                                builder:
+                                    (BuildContext context, AuthState state) {
+                                  return TextFormField(
+                                    obscureText: true,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintText: 'Enter a password',
+                                    ),
+                                    validator: (String? value) {
+                                      if (value == null || value.length < 8) {
+                                        return 'Password must be at least 8 characters';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (String value) {
+                                      context.read<AuthBloc>().add(
+                                            AuthPasswordChanged(value),
+                                          );
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              BlocBuilder<AuthBloc, AuthState>(
+                                buildWhen:
+                                    (AuthState previous, AuthState current) =>
+                                        previous.isLoading !=
+                                            current.isLoading ||
+                                        previous.user.email !=
+                                            current.user.email ||
+                                        previous.user.password !=
+                                            current.user.password,
+                                builder:
+                                    (BuildContext context, AuthState state) {
+                                  if (state.isLoading) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: <Widget>[
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            context.read<AuthBloc>().add(
+                                                  AuthLoginSubmitted(),
+                                                );
+                                          }
+                                        },
+                                        child: const Text('Login'),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      TextButton(
+                                        onPressed: () {
+                                          context.router.push(
+                                            const RegisterRoute(),
+                                          );
+                                        },
+                                        child: const Text(
+                                          "Don't have an Account?",
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () {
-                              context.router.push(const RegisterRoute());
-                            },
-                            child: const Text("Don't have an Account?"),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
+                        ),
+                      ),
+                    ),
         ),
       ),
     );

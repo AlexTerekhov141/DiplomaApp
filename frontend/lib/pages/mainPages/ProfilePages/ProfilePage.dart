@@ -39,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage>
       listenWhen: (AuthState previous, AuthState current) =>
           previous.isAuthenticated && !current.isAuthenticated,
       listener: (BuildContext context, AuthState state) {
-        context.router.replaceAll(<PageRouteInfo<dynamic>>[LoginRoute()]);
+        context.router.replaceAll(<PageRouteInfo<dynamic>>[const LoginRoute()]);
       },
       child: Scaffold(
         body: ResponsiveFrame(
@@ -109,7 +109,7 @@ ImageProvider _resolveAvatarImage(String imagePath) {
     return fallback;
   }
 
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+  if (imagePath.startsWith('http:') || imagePath.startsWith('https://')) {
     return NetworkImage(imagePath);
   }
 

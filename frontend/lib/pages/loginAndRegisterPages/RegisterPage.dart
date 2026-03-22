@@ -8,6 +8,13 @@ import 'package:categorize_app/bloc/AuthBloc/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../cards/registercards/LoginDetailsStep.dart';
+import '../../cards/registercards/PersonalDataStep.dart';
+import '../../cards/registercards/RegisterActionBar.dart';
+import '../../cards/registercards/RegisterProgressHeader.dart';
+import '../../cards/registercards/RegisterShellCard.dart';
+
+
 @RoutePage()
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -18,17 +25,16 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   int _currentStep = 0;
   String _password = '';
   String _passwordConfirm = '';
 
   @override
   Widget build(BuildContext context) {
-    final bool isAuthenticated = context
-        .watch<AuthBloc>()
-        .state
-        .isAuthenticated;
-    if (isAuthenticated) {
+    final AuthState authState = context.watch<AuthBloc>().state;
+
+    if (authState.isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.router.replaceAll(<PageRouteInfo<dynamic>>[
@@ -42,12 +48,13 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppAppBar(),
       body: ResponsiveFrame(
-        maxWidth: 680,
+        maxWidth: 720,
         child: BlocListener<AuthBloc, AuthState>(
           listener: (BuildContext context, AuthState state) {
             if (state.errorMessage != null) {
               _showErrorSnackBar(context, state.errorMessage!);
             }
+
             if (state.isAuthenticated) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) {
@@ -59,139 +66,109 @@ class _RegisterPageState extends State<RegisterPage> {
               });
             }
           },
-          child: Form(
-            key: _formKey,
-            child: Stepper(
-              currentStep: _currentStep,
-              onStepContinue: () async {
-                if (_currentStep < 1) {
-                  setState(() => _currentStep++);
-                } else {
-                  if (_formKey.currentState!.validate()) {
-                    context.read<AuthBloc>().add(AuthRegisterSubmitted());
-                  }
-                }
-              },
-              onStepCancel: () {
-                if (_currentStep > 0) {
-                  setState(() => _currentStep--);
-                }
-              },
-              steps: <Step>[
-                Step(
-                  title: const Text('Personal data'),
-                  isActive: _currentStep >= 0,
-                  content: Column(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: RegisterShellCard(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Name',
-                        ),
-                        validator: (String? v) =>
-                            v == null || v.isEmpty ? 'Enter your name' : null,
-                        onChanged: (String v) => context.read<AuthBloc>().add(
-                          AuthFirstNameChanged(v),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Surname',
-                        ),
-                        validator: (String? v) => v == null || v.isEmpty
-                            ? 'Enter your surname'
-                            : null,
-                        onChanged: (String v) => context.read<AuthBloc>().add(
-                          AuthLastNameChanged(v),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'UserName',
-                        ),
-                        validator: (String? v) =>
-                            v == null || v.isEmpty ? 'Enter username' : null,
-                        onChanged: (String v) => context.read<AuthBloc>().add(
-                          AuthUsernameChanged(v),
+                      RegisterProgressHeader(currentStep: _currentStep),
+                      const SizedBox(height: 24),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        child: _currentStep == 0
+                            ? const PersonalDataStep(
+                          key: ValueKey<String>('personal_step'),
+                        )
+                            : LoginDetailsStep(
+                          key: const ValueKey<String>('login_step'),
+                          password: _password,
+                          onPasswordChanged: (String value) {
+                            setState(() => _password = value);
+                            context.read<AuthBloc>().add(
+                              AuthPasswordChanged(value),
+                            );
+                          },
+                          onPasswordConfirmChanged: (String value) {
+                            setState(() => _passwordConfirm = value);
+                            context.read<AuthBloc>().add(
+                              AuthPasswordConfirmChanged(value),
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                Step(
-                  title: const Text('Login details'),
-                  isActive: _currentStep >= 1,
-                  content: Column(
-                    children: <Widget>[
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Email / Login',
-                        ),
-                        validator: (String? v) {
-                          if (v == null || v.isEmpty) return 'Enter email';
-                          final RegExp emailRegex = RegExp(
-                            r'^[^@]+@[^@]+\.[^@]+',
-                          );
-                          if (!emailRegex.hasMatch(v))
-                            return 'Invalid email format';
-                          return null;
-                        },
-                        onChanged: (String v) =>
-                            context.read<AuthBloc>().add(AuthEmailChanged(v)),
+                      const SizedBox(height: 28),
+                      RegisterActionBar(
+                        currentStep: _currentStep,
+                        isLoading: authState.isLoading,
+                        onBack: _handleBack,
+                        onContinue: _handleContinue,
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Password',
-                        ),
-                        validator: (String? v) {
-                          if (v == null || v.isEmpty) return 'Enter password';
-                          if (v.length < 8) return 'Minimum 8 characters';
-                          if (!RegExp(r'[A-Za-z]').hasMatch(v))
-                            return 'Add at least one letter';
-                          if (!RegExp(r'\d').hasMatch(v))
-                            return 'Add at least one digit';
-                          return null;
-                        },
-                        onChanged: (String v) {
-                          _password = v;
-                          context.read<AuthBloc>().add(AuthPasswordChanged(v));
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Confirm your password',
-                        ),
-                        validator: (String? v) {
-                          if (v == null || v.isEmpty) return 'Confirm password';
-                          if (v != _password)
-                            return "The passwords don't match";
-                          return null;
-                        },
-                        onChanged: (String v) {
-                          _passwordConfirm = v;
-                          context.read<AuthBloc>().add(
-                            AuthPasswordConfirmChanged(v),
-                          );
+                      const SizedBox(height: 16),
+                      _AuthFooter(
+                        onLoginTap: () {
+                          context.router.maybePop();
                         },
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleBack() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
+    }
+  }
+
+  void _handleContinue() {
+    final bool isLastStep = _currentStep == 1;
+
+    if (!isLastStep) {
+      setState(() => _currentStep++);
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(AuthRegisterSubmitted());
+    }
+  }
+}
+
+class _AuthFooter extends StatelessWidget {
+  const _AuthFooter({required this.onLoginTap});
+
+  final VoidCallback onLoginTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+    return Center(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        children: <Widget>[
+          Text(
+            'Already have an account?',
+            style: textTheme.bodyMedium,
+          ),
+          TextButton(
+            onPressed: onLoginTap,
+            child: const Text('Sign in'),
+          ),
+        ],
       ),
     );
   }
@@ -205,7 +182,9 @@ void _showErrorSnackBar(BuildContext context, String message) {
     SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       backgroundColor: colorScheme.errorContainer,
       content: Row(
         children: <Widget>[

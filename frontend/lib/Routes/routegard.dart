@@ -23,7 +23,7 @@ class RouteGuard  extends AutoRouteGuard {
     } else {
       final bool isLoginOnTop = router.current.name == LoginRoute.name;
       if (!isLoginOnTop) {
-        router.push(LoginRoute());
+        router.push(const LoginRoute());
       }
       resolver.next(false);
     }
