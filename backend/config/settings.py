@@ -181,3 +181,4 @@ CELERY_TASK_TIME_LIMIT = 300
 
 # ML
 ML_MODEL_PATH = env.str("ML_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "photo_classifier.h5"))
+NIMA_MODEL_PATH = env.str("NIMA_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "nima_model.h5"))
