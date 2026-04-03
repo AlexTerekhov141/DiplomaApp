@@ -4,6 +4,8 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:photo_view/photo_view.dart';
 
+import '../../../models/Photo.dart';
+
 @RoutePage()
 class PhotoViewerPage extends StatelessWidget {
 
@@ -29,20 +31,37 @@ class PhotoViewerPage extends StatelessWidget {
 }
 
 class NetworkPhotoViewerPage extends StatelessWidget {
-  const NetworkPhotoViewerPage({super.key, required this.imageUrl});
-  final String imageUrl;
+  const NetworkPhotoViewerPage({super.key, required this.photo});
+  final Photo photo;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(backgroundColor: Colors.black),
-      body: PhotoView(
-        imageProvider: NetworkImage(imageUrl),
-        backgroundDecoration: const BoxDecoration(
-          color: Colors.black,
-        ),
-      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: PhotoView(
+            imageProvider: NetworkImage(photo.image),
+            backgroundDecoration: const BoxDecoration(
+              color: Colors.black,
+            ),
+            ),
+          ),
+          SizedBox(
+            height: 50,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: photo.tags.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, int index) {
+                return Chip(label: Text(photo.tags[index]));
+              }
+              )
+          )
+        ],
+      )
     );
   }
 }

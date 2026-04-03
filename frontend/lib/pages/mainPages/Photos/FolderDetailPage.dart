@@ -1,8 +1,12 @@
 import 'package:auto_route/annotations.dart';
 import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
+import 'package:categorize_app/bloc/tagsbloc/bloc.dart';
+import 'package:categorize_app/bloc/tagsbloc/event.dart';
+import 'package:categorize_app/bloc/tagsbloc/state.dart';
 import 'package:categorize_app/bloc/themebloc/bloc.dart';
 import 'package:categorize_app/bloc/themebloc/states.dart';
 import 'package:categorize_app/models/Folders/Folder.dart';
+import 'package:categorize_app/models/Photo.dart';
 import 'package:categorize_app/pages/mainPages/Photos/Photo.dart';
 import 'package:categorize_app/repository/PhotosRepository.dart';
 import 'package:flutter/material.dart';
@@ -10,111 +14,203 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 @RoutePage()
-class FolderDetailsPage extends StatefulWidget {
+class FolderDetailsPage extends StatelessWidget {
   const FolderDetailsPage({super.key, required this.folder});
+
   final Folder folder;
 
   @override
-  State<FolderDetailsPage> createState() => _FolderDetailsPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider<TagsBloc>(
+      create: (_) => TagsBloc(
+        photosRepository: GetIt.I<PhotosRepository>(),
+      )..add(LoadFolderPhotos(folderId: folder.id)),
+      child: _FolderDetailsView(folder: folder),
+    );
+  }
 }
 
-class _FolderDetailsPageState extends State<FolderDetailsPage> {
-  late final Future<List<String>> _photosFuture = _loadFolderPhotos();
+class _FolderDetailsView extends StatelessWidget {
+  const _FolderDetailsView({required this.folder});
 
-  Future<List<String>> _loadFolderPhotos() async {
-    final PhotosRepository repository = GetIt.I<PhotosRepository>();
-    final List<Map<String, dynamic>> photos = await repository.getPhotos(
-      isProcessed: true,
-    );
-
-    final bool isUncategorized = widget.folder.id == 'uncategorized';
-
-    final List<String> urls = <String>[];
-    for (final Map<String, dynamic> photo in photos) {
-      final dynamic rawCategory = photo['category'];
-      final String? categoryId = rawCategory is Map<String, dynamic>
-          ? rawCategory['id']?.toString()
-          : null;
-
-      if (isUncategorized) {
-        if (categoryId == null || categoryId.isEmpty) {
-          final String url = (photo['image'] ?? '').toString();
-          if (url.isNotEmpty) {
-            urls.add(url);
-          }
-        }
-      } else if (categoryId == widget.folder.id) {
-        final String url = (photo['image'] ?? '').toString();
-        if (url.isNotEmpty) {
-          urls.add(url);
-        }
-      }
-    }
-    return urls;
-  }
+  final Folder folder;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.folder.name)),
+      appBar: AppBar(title: Text(folder.name)),
       body: ResponsiveFrame(
         maxWidth: 1000,
-        child: FutureBuilder<List<String>>(
-          future: _photosFuture,
-          builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: BlocBuilder<TagsBloc, TagsBlocState>(
+          builder: (BuildContext context, TagsBlocState state) {
+            if (state.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (snapshot.hasError) {
-              return Center(child: Text(snapshot.error.toString()));
+            if (state.error != null) {
+              return Center(child: Text(state.error!));
             }
 
-            final List<String> photos = snapshot.data ?? <String>[];
-            if (photos.isEmpty) {
-              return const Center(child: Text('No photos in this folder'));
-            }
+            final List<Photo> photos = state.filteredPhotos;
 
             return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 final int baseCount = constraints.maxWidth >= 1000
                     ? 6
                     : constraints.maxWidth >= 700
-                        ? 4
-                        : 3;
+                    ? 4
+                    : 3;
+
                 final GalleryGridSize gridSize = context.select(
-                  (ThemeBloc bloc) => bloc.state.gridSize,
+                      (ThemeBloc bloc) => bloc.state.gridSize,
                 );
+
                 final int crossAxisCount = _applyGridSize(baseCount, gridSize);
-                return GridView.builder(
-                  itemCount: photos.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemBuilder: (_, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                NetworkPhotoViewerPage(imageUrl: photos[index]),
-                          ),
-                        );
-                      },
-                      child: Image.network(
-                        photos[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const ColoredBox(
-                          color: Colors.black12,
-                          child: Center(
-                            child: Icon(Icons.broken_image_outlined),
+
+                final String search = state.searchQuery.toLowerCase().trim();
+
+                final List<String> visibleTags = state.availableTags.where((String tag) {
+                  if (search.isEmpty) return true;
+                  return tag.toLowerCase().contains(search);
+                }).toList();
+
+                return Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                      child: TextField(
+                        onChanged: (String value) {
+                          context.read<TagsBloc>().add(
+                            SearchQueryChanged(query: value),
+                          );
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search by tag',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: (state.searchQuery.isNotEmpty ||
+                              state.selectedTags.isNotEmpty)
+                              ? IconButton(
+                            onPressed: () {
+                              context.read<TagsBloc>().add(
+                                 ClearFilters(),
+                              );
+                            },
+                            icon: const Icon(Icons.clear),
+                          )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+
+                    if (state.selectedTags.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: state.selectedTags.map((String tag) {
+                              return InputChip(
+                                label: Text(tag),
+                                selected: true,
+                                onSelected: (_) {
+                                  context.read<TagsBloc>().add(
+                                    TagUnselected(tag: tag),
+                                  );
+                                },
+                                onDeleted: () {
+                                  context.read<TagsBloc>().add(
+                                    TagUnselected(tag: tag),
+                                  );
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+
+                    if (visibleTags.isNotEmpty)
+                      SizedBox(
+                        height: 56,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: visibleTags.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, int index) {
+                            final String tag = visibleTags[index];
+                            final bool isSelected =
+                            state.selectedTags.contains(tag);
+
+                            return FilterChip(
+                              label: Text(tag),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                context.read<TagsBloc>().add(
+                                  isSelected
+                                      ? TagUnselected(tag: tag)
+                                      : TagSelected(tag: tag),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+
+                    Expanded(
+                      child: photos.isEmpty
+                          ? const Center(
+                        child: Text('No photos match your filters'),
+                      )
+                          : GridView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: photos.length,
+                        gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemBuilder: (_, int index) {
+                          final Photo photo = photos[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) =>
+                                      NetworkPhotoViewerPage(photo: photo),
+                                ),
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                photo.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                const ColoredBox(
+                                  color: Colors.black12,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
             );
