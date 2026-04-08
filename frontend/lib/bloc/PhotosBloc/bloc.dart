@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../../repository/PhotosRepository.dart';
+import '../../repository/PhotosRepository/PhotosRepository.dart';
 import 'events.dart';
 import 'states.dart';
 
@@ -64,6 +64,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
       int page = 0;
       const int pageSize = 100;
       final List<AssetEntity> allPhotos = <AssetEntity>[];
+      final Set<String> seenAssetIds = <String>{};
 
       while (true) {
         final List<AssetEntity> photos = await recentAlbum.getAssetListPaged(
@@ -75,7 +76,11 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
           break;
         }
 
-        allPhotos.addAll(photos);
+        for (final AssetEntity photo in photos) {
+          if (seenAssetIds.add(photo.id)) {
+            allPhotos.add(photo);
+          }
+        }
         page++;
       }
 

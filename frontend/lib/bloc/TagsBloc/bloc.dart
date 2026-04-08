@@ -3,7 +3,7 @@ import 'package:categorize_app/bloc/tagsbloc/state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/Photo.dart';
-import '../../repository/PhotosRepository.dart';
+import '../../repository/PhotosRepository/PhotosRepository.dart';
 
 
 class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {

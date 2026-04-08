@@ -1,6 +1,6 @@
 import 'package:categorize_app/models/Folders/FolderResponse.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../repository/FolderTagsRepository.dart';
+import '../../repository/FolderTagsRepository/FolderTagsRepository.dart';
 import 'events.dart';
 import 'states.dart';
 

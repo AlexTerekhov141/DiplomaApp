@@ -1,9 +1,9 @@
 import 'package:auto_route/annotations.dart';
 import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/BottomBar.dart';
-import 'package:categorize_app/pages/mainPages/ChatPage.dart';
-import 'package:categorize_app/pages/mainPages/Photos/FoldersPage.dart';
-import 'package:categorize_app/pages/mainPages/Photos/GalleryPage.dart';
+import 'package:categorize_app/pages/mainPages/FeaturePage/Chat/ChatPage.dart';
+import 'package:categorize_app/pages/mainPages/Photos/Folders/FoldersPage.dart';
+import 'package:categorize_app/pages/mainPages/Photos/Gallery/GalleryPage.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
@@ -42,7 +42,7 @@ class _AppPageState extends State<AppPage> {
             _currentIndex = index;
           });
         },
-        children: const <Widget>[GalleryPage(), FoldersPage(), ChatPage()],
+        children: const <Widget>[GalleryPage(), FoldersPage(), FeatureHubPage()],
       ),
       bottomNavigationBar: BottomBar(
         currentIndex: _currentIndex,

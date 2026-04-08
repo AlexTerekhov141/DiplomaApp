@@ -21,7 +21,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  static const String _onboardingSeenKey = 'onboarding_seen_v1';
+  static const String _onboardingSeenKey = 'onboarding_seen_v11999';
 
   bool _isLoadingOnboarding = true;
   bool _showOnboarding = true;
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
           child: _isLoadingOnboarding
               ? const Center(child: CircularProgressIndicator())
               : _showOnboarding
-                  ? OnboardingView(
+                  ? OnboardingPage(
                       onDone: _finishOnboarding,
                       onRegister: () async {
                         await _finishOnboarding();

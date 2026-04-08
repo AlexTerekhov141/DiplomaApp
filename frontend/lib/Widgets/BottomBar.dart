@@ -26,8 +26,8 @@ class BottomBar extends StatelessWidget {
           title: const Text('Categorize'),
         ),
         SalomonBottomBarItem(
-          icon: const Icon(Icons.chat),
-          title: const Text('Chat'),
+          icon: const Icon(Icons.apps ),
+          title: const Text('Features'),
         ),
       ],
     );

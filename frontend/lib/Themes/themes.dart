@@ -22,8 +22,8 @@ class Themes {
         foregroundColor: Base.c50,
       ),
       textTheme: TextTheme(
-        bodyLarge: TextStyle(color: Base.c950, fontSize: 18, fontWeight: FontWeight.bold),
-        bodyMedium: TextStyle(color: Base.c800, fontSize: 16),
+        bodyLarge: const TextStyle(color: Base.c950, fontSize: 18, fontWeight: FontWeight.bold),
+        bodyMedium: const TextStyle(color: Base.c800, fontSize: 16),
         bodySmall: TextStyle(color: Colors.grey.shade500, fontSize: 10),
       ),
       chipTheme: ChipThemeData(
@@ -31,15 +31,15 @@ class Themes {
         backgroundColor: Base.c50,
         selectedColor: Base.c50,
         disabledColor: Colors.grey.shade200,
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           color: Base.c400,
         ),
-        secondaryLabelStyle: TextStyle(
+        secondaryLabelStyle: const TextStyle(
           color: Blue.c500,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Base.c500),
+          side: const BorderSide(color: Base.c500),
         ),
       ),
     );
@@ -65,8 +65,8 @@ class Themes {
         foregroundColor: Base.c950,
       ),
       textTheme: TextTheme(
-        bodyLarge: TextStyle(color: Base.c50, fontSize: 18, fontWeight: FontWeight.bold),
-        bodyMedium: TextStyle(color: Base.c200, fontSize: 16),
+        bodyLarge: const TextStyle(color: Base.c50, fontSize: 18, fontWeight: FontWeight.bold),
+        bodyMedium: const TextStyle(color: Base.c200, fontSize: 16),
         bodySmall: TextStyle(color: Colors.grey.shade400, fontSize: 10),
       ),
       chipTheme: ChipThemeData(
@@ -74,11 +74,11 @@ class Themes {
         backgroundColor: Base.c900,
         selectedColor: Blue.c500,
         disabledColor: Colors.grey.shade800,
-        labelStyle: TextStyle(color: Base.c200),
-        secondaryLabelStyle: TextStyle(color: Base.c50),
+        labelStyle: const TextStyle(color: Base.c200),
+        secondaryLabelStyle: const TextStyle(color: Base.c50),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Blue.c500),
+          side: const BorderSide(color: Blue.c500),
         ),
       ),
     );

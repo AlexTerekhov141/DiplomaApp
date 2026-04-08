@@ -1,0 +1,74 @@
+import 'package:dio/dio.dart';
+
+import '../../models/Folders/Folder.dart';
+import '../../models/Folders/FolderResponse.dart';
+import '../PhotosRepository/PhotosRepository.dart';
+import 'FolderTagsRepository.dart';
+
+class FolderTagsRepositoryImpl implements FolderTagsRepository {
+  FolderTagsRepositoryImpl(this.photosRepository);
+  final PhotosRepository photosRepository;
+
+  @override
+  Future<FolderResponse> fetchFolders({bool forceRefresh = false}) async {
+    try {
+      final List<Map<String, dynamic>> photos = await photosRepository.getPhotos(
+        isProcessed: true,
+        forceRefresh: forceRefresh,
+      );
+      final Map<String, Folder> grouped = <String, Folder>{};
+
+      for (final Map<String, dynamic> photo in photos) {
+        final dynamic rawCategory = photo['category'];
+        final Map<String, dynamic>? category = rawCategory is Map<String, dynamic>
+            ? rawCategory
+            : null;
+        final String imageUrl = (photo['image'] ?? '').toString();
+
+        final String folderId = category?['id']?.toString() ?? 'uncategorized';
+        final String folderName = category?['name']?.toString() ?? 'Uncategorized';
+
+        final Folder? existing = grouped[folderId];
+        if (existing == null) {
+          final List<String> previewUrls = <String>[];
+          if (imageUrl.isNotEmpty) {
+            previewUrls.add(imageUrl);
+          }
+          grouped[folderId] = Folder(
+            id: folderId,
+            name: folderName,
+            photosCount: 1,
+            previewUrls: previewUrls,
+          );
+        } else {
+          final List<String> previewUrls = List<String>.from(existing.previewUrls);
+          if (imageUrl.isNotEmpty && previewUrls.length < 4) {
+            previewUrls.add(imageUrl);
+          }
+          grouped[folderId] = Folder(
+            id: existing.id,
+            name: existing.name,
+            photosCount: existing.photosCount + 1,
+            previewUrls: previewUrls,
+          );
+        }
+      }
+
+      final List<Folder> folders = grouped.values.toList()
+        ..sort((Folder a, Folder b) => b.photosCount.compareTo(a.photosCount));
+
+      return FolderResponse(folders: folders);
+    } catch (e) {
+      final String message = e.toString();
+      if (message.contains('No token')) {
+        return FolderResponse(folders: const <Folder>[]);
+      }
+      if (e is DioException &&
+          (e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.connectionTimeout)) {
+        return FolderResponse(folders: const <Folder>[]);
+      }
+      rethrow;
+    }
+  }
+}

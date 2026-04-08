@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
 import '../../models/User.dart';
-import '../../repository/AuthRepository.dart';
+import '../../repository/AuthRepository/AuthRepository.dart';
 import 'event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {

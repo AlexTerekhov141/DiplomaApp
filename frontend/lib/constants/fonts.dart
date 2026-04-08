@@ -23,23 +23,23 @@ class Headers {
 }
 
 class L extends Font{
-  static final TextStyle Normal = TextStyle(
+  static const TextStyle Normal = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.normal,
       color: Base.c500
   );
-  static final TextStyle Bold = TextStyle(
+  static const TextStyle Bold = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.bold,
       color: Base.c400
   );
-  static final TextStyle Strong = TextStyle(
+  static const TextStyle Strong = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
       color: Base.c400
   );
 
-  static final TextStyle Italic = TextStyle(
+  static const TextStyle Italic = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.normal,
       fontStyle: FontStyle.italic,
