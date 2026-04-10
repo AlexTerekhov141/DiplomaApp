@@ -28,7 +28,7 @@ class EnhanceToolbar extends StatelessWidget {
           EnhanceActionButton(
             text: 'Pick Photo',
             onPressed: () async {
-              final Uint8List? bytes = await pickPhotoBytes();
+              final Uint8List? bytes = await pickPhotoBytes(context);
               if (bytes != null) {
                 onImagePicked(bytes);
               }

@@ -14,7 +14,7 @@ class PhotoRoastPage extends StatefulWidget {
 }
 
 class _PhotoRoastPageState extends State<PhotoRoastPage> {
-  bool _showIssues = true;
+  bool _showIssues = false;
 
   void _toggleIssues() {
     setState(() {

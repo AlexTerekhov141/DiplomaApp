@@ -25,7 +25,7 @@ class PhotoRoastIssuesSection extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onToggle,
             icon: Icon(
-              showIssues ? Icons.expand_less : Icons.expand_more,
+              showIssues ? Icons.expand_more : Icons.expand_less,
             ),
             label: Text(
               showIssues ? 'Hide problems' : 'Show problems',

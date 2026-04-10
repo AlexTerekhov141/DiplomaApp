@@ -16,4 +16,13 @@ abstract class PhotosRepository {
   Future<Map<String, int>> getRemoteProcessingStats();
 
   Future<int> bulkUploadLocalPhotos(List<AssetEntity> assets);
+
+  Future<Set<String>> getFavoriteIds();
+  Future<void> toggleFavorite(String assetId);
+  Future<bool> isFavorite(String assetId);
+
+  Future<Set<String>> getTrashedIds();
+  Future<void> toggleTrash(String assetId);
+  Future<bool> isTrashed(String assetId);
+
 }

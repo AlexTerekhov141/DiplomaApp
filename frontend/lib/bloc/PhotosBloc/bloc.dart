@@ -13,6 +13,12 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     on<PhotosSyncToServerEvent>(_onSyncPhotosToServer);
     on<PhotosResetEvent>(_onReset);
     on<PhotosRefreshProcessingStatusEvent>(_onRefreshProcessingStatus);
+    on<LoadFavoritesEvent>(_onLoadFavorites);
+    on<ToggleFavoriteEvent>(_onToggleFavorite);
+    add(LoadFavoritesEvent());
+    on<LoadTrashEvent>(_onLoadTrash);
+    on<ToggleTrashEvent>(_onToggleTrash);
+    add(LoadTrashEvent());
   }
   final PhotosRepository photosRepository;
 
@@ -84,9 +90,11 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
         page++;
       }
 
+      final Set<String> favoriteIds = await photosRepository.getFavoriteIds();
       emit(
         state.copyWith(
           photos: allPhotos,
+          favoriteIds: favoriteIds,
           isLoading: false,
           error: null,
         ),
@@ -160,5 +168,64 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     Emitter<PhotosState> emit,
   ) {
     emit(PhotosState.initial());
+  }
+
+  Future<void> _onLoadFavorites(
+    LoadFavoritesEvent event,
+    Emitter<PhotosState> emit,
+  ) async {
+    final Set<String> favoriteIds = await photosRepository.getFavoriteIds();
+    emit(state.copyWith(favoriteIds: favoriteIds));
+  }
+
+  Future<void> _onToggleFavorite(
+    ToggleFavoriteEvent event,
+    Emitter<PhotosState> emit,
+  ) async {
+    final Set<String> previousIds = Set<String>.from(state.favoriteIds);
+    final Set<String> updatedIds = Set<String>.from(previousIds);
+    final bool wasFavorite = updatedIds.contains(event.assetId);
+    if (wasFavorite) {
+      updatedIds.remove(event.assetId);
+    } else {
+      updatedIds.add(event.assetId);
+    }
+
+    emit(state.copyWith(favoriteIds: updatedIds));
+
+    try {
+      await photosRepository.toggleFavorite(event.assetId);
+    } catch (_) {
+      emit(state.copyWith(favoriteIds: previousIds));
+    }
+  }
+  Future<void> _onLoadTrash(
+      LoadTrashEvent event,
+      Emitter<PhotosState> emit,
+      ) async {
+    final Set<String> trashedIds = await photosRepository.getTrashedIds();
+    emit(state.copyWith(trashedIds: trashedIds));
+  }
+
+  Future<void> _onToggleTrash(
+      ToggleTrashEvent event,
+      Emitter<PhotosState> emit,
+      ) async {
+    final Set<String> previousIds = Set<String>.from(state.trashedIds);
+    final Set<String> updatedIds = Set<String>.from(previousIds);
+    final bool wasTrash = updatedIds.contains(event.assetId);
+    if (wasTrash) {
+      updatedIds.remove(event.assetId);
+    } else {
+      updatedIds.add(event.assetId);
+    }
+
+    emit(state.copyWith(trashedIds: updatedIds));
+
+    try {
+      await photosRepository.toggleTrash(event.assetId);
+    } catch (_) {
+      emit(state.copyWith(trashedIds: previousIds));
+    }
   }
 }

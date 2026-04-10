@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../models/Photo.dart';
@@ -30,15 +31,26 @@ class FolderPhotosGrid extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => NetworkPhotoViewerPage(photo: photo),
+                builder: (_) => NetworkPhotoViewerPage(
+                  photo: photo,
+                  photos: photos,
+                  initialIndex: index,
+                ),
               ),
             );
           },
           child: ClipRRect(
-            child: Image.network(
-              photo.image,
+            child: CachedNetworkImage(
+              imageUrl: photo.image,
+              cacheKey: 'photo_${photo.id}',
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              placeholder: (_, __) => const ColoredBox(
+                color: Colors.black12,
+                child: SizedBox.expand(),
+              ),
+              errorWidget: (_, __, ___) => const ColoredBox(
                 color: Colors.black12,
                 child: Center(
                   child: Icon(Icons.broken_image_outlined),

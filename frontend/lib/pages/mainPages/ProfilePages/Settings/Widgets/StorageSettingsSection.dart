@@ -10,9 +10,13 @@ class StorageSettingsSection extends StatelessWidget {
   const StorageSettingsSection({
     super.key,
     required this.onClearCacheTap,
+    required this.cacheSizeText,
+    required this.isClearing,
   });
 
-  final VoidCallback onClearCacheTap;
+  final String cacheSizeText;
+  final bool isClearing;
+  final Future<void> Function() onClearCacheTap;
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +24,18 @@ class StorageSettingsSection extends StatelessWidget {
       title: 'Storage & cache',
       subtitle: 'Local files and cleanup',
       children: <Widget>[
-        const SettingsInfoTile(
+        SettingsInfoTile(
           icon: Icons.storage_outlined,
           title: 'Image cache size',
-          subtitle: 'Estimated size: 128 MB',
+          subtitle: cacheSizeText,
         ),
         SettingsActionTile(
           icon: Icons.cleaning_services_outlined,
           title: 'Clear image cache',
-          subtitle: 'Remove cached thumbnails and previews',
-          onTap: onClearCacheTap,
+          subtitle: isClearing ? 'Clearing...' : 'Clear',
+          onTap: () {
+            onClearCacheTap();
+          },
         ),
       ],
     );

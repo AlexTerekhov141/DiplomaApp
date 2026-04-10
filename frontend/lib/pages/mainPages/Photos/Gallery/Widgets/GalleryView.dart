@@ -103,7 +103,7 @@ class GalleryView extends StatelessWidget {
                         ),
                       ),
                     GalleryPhotosGrid(
-                      photos: state.photos,
+                      photos: state.activePhotos,
                       crossAxisCount: crossAxisCount,
                     ),
                   ],

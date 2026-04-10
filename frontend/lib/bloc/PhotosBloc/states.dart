@@ -14,6 +14,8 @@ class PhotosState extends Equatable {
     this.remotePendingCount = 0,
     this.error,
     this.syncError,
+    this.favoriteIds = const <String>{},
+    this.trashedIds = const <String>{},
   });
 
   factory PhotosState.initial() {
@@ -29,6 +31,18 @@ class PhotosState extends Equatable {
   final int remotePendingCount;
   final String? error;
   final String? syncError;
+  final Set<String> favoriteIds;
+  final Set<String> trashedIds;
+  List<AssetEntity> get favoritePhotos => photos
+      .where((AssetEntity photo) => favoriteIds.contains(photo.id))
+      .toList();
+  List<AssetEntity> get trashedPhotos => photos
+      .where((AssetEntity photo) => trashedIds.contains(photo.id))
+      .toList();
+  List<AssetEntity> get activePhotos => photos
+      .where((AssetEntity photo) => !trashedIds.contains(photo.id))
+      .toList();
+
 
   PhotosState copyWith({
     List<AssetEntity>? photos,
@@ -41,6 +55,8 @@ class PhotosState extends Equatable {
     int? remotePendingCount,
     String? error,
     String? syncError,
+    Set<String>? favoriteIds,
+    Set<String>? trashedIds,
   }) {
     return PhotosState(
       photos: photos ?? this.photos,
@@ -54,6 +70,8 @@ class PhotosState extends Equatable {
       remotePendingCount: remotePendingCount ?? this.remotePendingCount,
       error: error,
       syncError: syncError,
+      favoriteIds: favoriteIds ?? this.favoriteIds,
+      trashedIds: trashedIds ?? this.trashedIds,
     );
   }
 
@@ -69,5 +87,7 @@ class PhotosState extends Equatable {
     remotePendingCount,
     error,
     syncError,
+    favoriteIds,
+    trashedIds,
   ];
 }

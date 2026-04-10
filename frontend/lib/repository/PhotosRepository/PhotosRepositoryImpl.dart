@@ -13,6 +13,8 @@ class PhotosRepositoryImpl implements PhotosRepository {
   final Dio dio;
   final FlutterSecureStorage storage;
   static const String _uploadedAssetIdsKey = 'uploaded_asset_ids_v1';
+  static const String _favoritePhotoIdsKey = 'favorite_photo_ids_v1';
+  static const String _trashedPhotoIdsKey = 'trashed_photo_ids_v1';
   final Map<String, List<Map<String, dynamic>>> _photosCache =
   <String, List<Map<String, dynamic>>>{};
 
@@ -383,5 +385,80 @@ class PhotosRepositoryImpl implements PhotosRepository {
       key: _uploadedAssetIdsKey,
       value: jsonEncode(ids.toList()),
     );
+  }
+
+  @override
+  Future<Set<String>> getFavoriteIds() async {
+    final String? raw = await storage.read(key: _favoritePhotoIdsKey);
+    if (raw == null || raw.isEmpty) {
+      return <String>{};
+    }
+    try {
+      final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.whereType<String>().toSet();
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
+  Future<void> _writeFavoriteIds(Set<String> ids) async {
+    await storage.write(
+      key: _favoritePhotoIdsKey,
+      value: jsonEncode(ids.toList()),
+    );
+  }
+
+  @override
+  Future<void> toggleFavorite(String assetId) async {
+    final Set<String> currentIds = await getFavoriteIds();
+    if (currentIds.contains(assetId)) {
+      currentIds.remove(assetId);
+    } else {
+      currentIds.add(assetId);
+    }
+    await _writeFavoriteIds(currentIds);
+  }
+
+  @override
+  Future<bool> isFavorite(String assetId) async {
+    final Set<String> currentIds = await getFavoriteIds();
+    return currentIds.contains(assetId);
+  }
+  @override
+  Future<Set<String>> getTrashedIds() async {
+    final String? raw = await storage.read(key: _trashedPhotoIdsKey);
+    if (raw == null || raw.isEmpty) {
+      return <String>{};
+    }
+    try {
+      final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.whereType<String>().toSet();
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
+  Future<void> _writeTrashedIds(Set<String> ids) async {
+    await storage.write(
+      key: _trashedPhotoIdsKey,
+      value: jsonEncode(ids.toList()),
+    );
+  }
+
+  @override
+  Future<void> toggleTrash(String assetId) async {
+    final Set<String> currentIds = await getTrashedIds();
+    if (currentIds.contains(assetId)) {
+      currentIds.remove(assetId);
+    } else {
+      currentIds.add(assetId);
+    }
+    await _writeTrashedIds(currentIds);
+  }
+
+  @override
+  Future<bool> isTrashed(String assetId) async {
+    final Set<String> currentIds = await getTrashedIds();
+    return currentIds.contains(assetId);
   }
 }
