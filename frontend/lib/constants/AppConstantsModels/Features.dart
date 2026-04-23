@@ -1,17 +1,15 @@
-import 'package:categorize_app/Routes/routes.gr.dart';
-import 'package:flutter/material.dart';
 
 import '../../models/Features/Feature.dart';
 
 final List<Feature> features = <Feature>[
-  Feature(
+  /*Feature(
     name: 'Enchance',
     icon: Icons.auto_awesome,
     route: const EnhanceRoute(),
-  ),
-  Feature(
+  ),*/
+  /*Feature(
     name: 'Photo Roast',
     icon: Icons.whatshot,
     route: const PhotoRoastRoute(),
-  ),
+  ),*/
 ];

@@ -1,0 +1,4 @@
+enum ProcessingMode {
+  online,
+  offline
+}

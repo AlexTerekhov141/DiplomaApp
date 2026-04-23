@@ -4,11 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../repository/PhotosRepository/PhotosRepository.dart';
+import '../../repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'events.dart';
 import 'states.dart';
 
 class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
-  PhotosBloc({required this.photosRepository}) : super(PhotosState.initial()) {
+  PhotosBloc({required this.repository}) : super(PhotosState.initial()) {
     on<PhotosLoadEvent>(_onLoadPhotos);
     on<PhotosSyncToServerEvent>(_onSyncPhotosToServer);
     on<PhotosResetEvent>(_onReset);
@@ -20,12 +21,11 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     on<ToggleTrashEvent>(_onToggleTrash);
     add(LoadTrashEvent());
   }
-  final PhotosRepository photosRepository;
+  final ProccessingRouterRepository repository;
+  Future<PhotosRepository> _activeRepo() => repository.changeMode();
 
-  Future<void> _onLoadPhotos(
-      PhotosLoadEvent event,
-      Emitter<PhotosState> emit,
-      ) async {
+  Future<void> _onLoadPhotos(PhotosLoadEvent event, Emitter<PhotosState> emit,) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     emit(state.copyWith(isLoading: true));
 
     final bool isDesktop = !kIsWeb &&
@@ -42,7 +42,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
 
     try {
       final PermissionState permission = await PhotoManager.requestPermissionExtend();
-      if (!permission.isAuth) {
+      if (!permission.hasAccess) {
         emit(state.copyWith(
           isLoading: false,
           error: 'Permission denied',
@@ -109,13 +109,11 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     }
   }
 
-  Future<void> _onSyncPhotosToServer(
-    PhotosSyncToServerEvent event,
-    Emitter<PhotosState> emit,
-  ) async {
+  Future<void> _onSyncPhotosToServer(PhotosSyncToServerEvent event, Emitter<PhotosState> emit,) async {
     if (event.photos.isEmpty) {
       return;
     }
+    final PhotosRepository photosRepository = await _activeRepo();
 
     emit(state.copyWith(isSyncing: true, syncError: null));
 
@@ -138,11 +136,9 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     }
   }
 
-  Future<void> _onRefreshProcessingStatus(
-    PhotosRefreshProcessingStatusEvent event,
-    Emitter<PhotosState> emit,
-  ) async {
+  Future<void> _onRefreshProcessingStatus(PhotosRefreshProcessingStatusEvent event, Emitter<PhotosState> emit,) async {
     emit(state.copyWith(isProcessingStatusLoading: true));
+    final PhotosRepository photosRepository = await _activeRepo();
     try {
       final Map<String, int> stats =
           await photosRepository.getRemoteProcessingStats();
@@ -170,18 +166,14 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     emit(PhotosState.initial());
   }
 
-  Future<void> _onLoadFavorites(
-    LoadFavoritesEvent event,
-    Emitter<PhotosState> emit,
-  ) async {
+  Future<void> _onLoadFavorites(LoadFavoritesEvent event, Emitter<PhotosState> emit,) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     final Set<String> favoriteIds = await photosRepository.getFavoriteIds();
     emit(state.copyWith(favoriteIds: favoriteIds));
   }
 
-  Future<void> _onToggleFavorite(
-    ToggleFavoriteEvent event,
-    Emitter<PhotosState> emit,
-  ) async {
+  Future<void> _onToggleFavorite(ToggleFavoriteEvent event, Emitter<PhotosState> emit,) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     final Set<String> previousIds = Set<String>.from(state.favoriteIds);
     final Set<String> updatedIds = Set<String>.from(previousIds);
     final bool wasFavorite = updatedIds.contains(event.assetId);
@@ -199,18 +191,14 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
       emit(state.copyWith(favoriteIds: previousIds));
     }
   }
-  Future<void> _onLoadTrash(
-      LoadTrashEvent event,
-      Emitter<PhotosState> emit,
-      ) async {
+  Future<void> _onLoadTrash(LoadTrashEvent event, Emitter<PhotosState> emit,) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     final Set<String> trashedIds = await photosRepository.getTrashedIds();
     emit(state.copyWith(trashedIds: trashedIds));
   }
 
-  Future<void> _onToggleTrash(
-      ToggleTrashEvent event,
-      Emitter<PhotosState> emit,
-      ) async {
+  Future<void> _onToggleTrash(ToggleTrashEvent event, Emitter<PhotosState> emit,) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     final Set<String> previousIds = Set<String>.from(state.trashedIds);
     final Set<String> updatedIds = Set<String>.from(previousIds);
     final bool wasTrash = updatedIds.contains(event.assetId);

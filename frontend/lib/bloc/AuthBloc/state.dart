@@ -16,6 +16,7 @@ class AuthState extends Equatable {
     required this.status,
     this.isLoading = false,
     this.errorMessage,
+    this.userChoice = false
   });
 
   factory AuthState.initial() => AuthState(
@@ -27,6 +28,7 @@ class AuthState extends Equatable {
   final AuthStatus status;
   final bool isLoading;
   final String? errorMessage;
+  final bool userChoice;
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
 
@@ -35,6 +37,7 @@ class AuthState extends Equatable {
     AuthStatus? status,
     bool? isLoading,
     Object? errorMessage = _errorMessageUnchanged,
+    bool? userChoice
   }) {
     return AuthState(
       user: user ?? this.user,
@@ -43,9 +46,10 @@ class AuthState extends Equatable {
       errorMessage: identical(errorMessage, _errorMessageUnchanged)
           ? this.errorMessage
           : errorMessage as String?,
+      userChoice: userChoice ?? this.userChoice
     );
   }
 
   @override
-  List<Object?> get props => <Object?>[user, status, isLoading, errorMessage,];
+  List<Object?> get props => <Object?>[user, status, isLoading, errorMessage, userChoice];
 }

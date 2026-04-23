@@ -3,19 +3,23 @@ import 'package:dio/dio.dart';
 import '../../models/Folders/Folder.dart';
 import '../../models/Folders/FolderResponse.dart';
 import '../PhotosRepository/PhotosRepository.dart';
+import '../ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'FolderTagsRepository.dart';
 
 class FolderTagsRepositoryImpl implements FolderTagsRepository {
-  FolderTagsRepositoryImpl(this.photosRepository);
-  final PhotosRepository photosRepository;
+  FolderTagsRepositoryImpl(this.repository);
+  final ProccessingRouterRepository repository;
+  Future<PhotosRepository> _activeRepo() => repository.changeMode();
 
   @override
   Future<FolderResponse> fetchFolders({bool forceRefresh = false}) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     try {
       final List<Map<String, dynamic>> photos = await photosRepository.getPhotos(
         isProcessed: true,
         forceRefresh: forceRefresh,
       );
+
       final Map<String, Folder> grouped = <String, Folder>{};
 
       for (final Map<String, dynamic> photo in photos) {

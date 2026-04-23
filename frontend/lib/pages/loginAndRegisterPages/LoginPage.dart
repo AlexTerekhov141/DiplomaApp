@@ -21,7 +21,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  static const String _onboardingSeenKey = 'onboarding_seen_v11999';
+  static const String _onboardingSeenKey = 'onboarding_seen_v1199912345';
 
   bool _isLoadingOnboarding = true;
   bool _showOnboarding = true;

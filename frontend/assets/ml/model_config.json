@@ -1,0 +1,20 @@
+{
+  "model_file": "assets/ml/model.tflite",
+  "labels_file": "assets/ml/labels.json",
+  "input": {
+    "width": 224,
+    "height": 224,
+    "channels": 3,
+    "color_space": "RGB"
+  },
+  "preprocess": {
+    "scale": 255.0,
+    "mean": [0.0, 0.0, 0.0],
+    "std": [1.0, 1.0, 1.0]
+  },
+  "postprocess": {
+    "top_k": 1,
+    "confidence_threshold": 0.0
+  },
+  "classes_count": 5
+}

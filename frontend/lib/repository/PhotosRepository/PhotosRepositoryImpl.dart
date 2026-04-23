@@ -7,14 +7,12 @@ import 'package:photo_manager/photo_manager.dart';
 
 import '../../constants/app_config.dart';
 import 'PhotosRepository.dart';
+import 'PhotosRepositoryConstants.dart';
 
 class PhotosRepositoryImpl implements PhotosRepository {
   PhotosRepositoryImpl({required this.dio, required this.storage});
   final Dio dio;
   final FlutterSecureStorage storage;
-  static const String _uploadedAssetIdsKey = 'uploaded_asset_ids_v1';
-  static const String _favoritePhotoIdsKey = 'favorite_photo_ids_v1';
-  static const String _trashedPhotoIdsKey = 'trashed_photo_ids_v1';
   final Map<String, List<Map<String, dynamic>>> _photosCache =
   <String, List<Map<String, dynamic>>>{};
 
@@ -22,15 +20,15 @@ class PhotosRepositoryImpl implements PhotosRepository {
       ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1)
       : AppConfig.apiBaseUrl;
 
-  String get _photosUrl => '$_baseUrl/api/photos/';
-  String get _bulkUploadUrl => '$_baseUrl/api/photos/bulk-upload/';
-  String get _bestPhotosUrl => '$_baseUrl/api/photos/best/';
-  String get _categoriesUrl => '$_baseUrl/api/categories/';
-  String get _tagsUrl => '$_baseUrl/api/tags/';
-  String get _refreshUrl => '$_baseUrl/api/auth/refresh/';
+  String get _photosUrl => '$_baseUrl${PhotosRepositoryConstants.photosPath}';
+  String get _bulkUploadUrl => '$_baseUrl${PhotosRepositoryConstants.bulkUploadPath}';
+  String get _bestPhotosUrl => '$_baseUrl${PhotosRepositoryConstants.bestPhotosPath}';
+  String get _categoriesUrl => '$_baseUrl${PhotosRepositoryConstants.categoriesPath}';
+  String get _tagsUrl => '$_baseUrl${PhotosRepositoryConstants.tagsPath}';
+  String get _refreshUrl => '$_baseUrl${PhotosRepositoryConstants.refreshPath}';
 
   Future<String?> _readAccessToken() async {
-    return storage.read(key: 'access_token');
+    return storage.read(key: PhotosRepositoryConstants.accessTokenKey);
   }
 
   bool _isUnauthorized(DioException e) {
@@ -38,7 +36,8 @@ class PhotosRepositoryImpl implements PhotosRepository {
   }
 
   Future<bool> _tryRefreshToken() async {
-    final String? refreshToken = await storage.read(key: 'refresh_token');
+    final String? refreshToken =
+        await storage.read(key: PhotosRepositoryConstants.refreshTokenKey);
     if (refreshToken == null || refreshToken.isEmpty) {
       return false;
     }
@@ -56,10 +55,16 @@ class PhotosRepositoryImpl implements PhotosRepository {
         final String? newAccess = response.data['access'] as String?;
         final String? newRefresh = response.data['refresh'] as String?;
         if (newAccess != null && newAccess.isNotEmpty) {
-          await storage.write(key: 'access_token', value: newAccess);
+          await storage.write(
+            key: PhotosRepositoryConstants.accessTokenKey,
+            value: newAccess,
+          );
         }
         if (newRefresh != null && newRefresh.isNotEmpty) {
-          await storage.write(key: 'refresh_token', value: newRefresh);
+          await storage.write(
+            key: PhotosRepositoryConstants.refreshTokenKey,
+            value: newRefresh,
+          );
         }
         return newAccess != null && newAccess.isNotEmpty;
       }
@@ -139,7 +144,9 @@ class PhotosRepositoryImpl implements PhotosRepository {
             nextUrl!,
             queryParameters: nextQuery,
             options: (await _authorizedJsonOptions()).copyWith(
-              receiveTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(
+                seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+              ),
             ),
           );
         },
@@ -234,7 +241,9 @@ class PhotosRepositoryImpl implements PhotosRepository {
           () async => dio.get(
         _photosUrl,
         options: (await _authorizedJsonOptions()).copyWith(
-          receiveTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(
+            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+          ),
         ),
       ),
     );
@@ -258,7 +267,9 @@ class PhotosRepositoryImpl implements PhotosRepository {
           () async => dio.get(
         _photosUrl,
         options: (await _authorizedJsonOptions()).copyWith(
-          receiveTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(
+            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+          ),
         ),
       ),
     );
@@ -268,7 +279,9 @@ class PhotosRepositoryImpl implements PhotosRepository {
         _photosUrl,
         queryParameters: const <String, dynamic>{'is_processed': 'true'},
         options: (await _authorizedJsonOptions()).copyWith(
-          receiveTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(
+            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+          ),
         ),
       ),
     );
@@ -322,8 +335,8 @@ class PhotosRepositoryImpl implements PhotosRepository {
     }
 
     int uploadedTotal = 0;
-    for (int i = 0; i < pendingAssets.length; i += 20) {
-      final int end = (i + 20 < pendingAssets.length) ? i + 20 : pendingAssets.length;
+    for (int i = 0; i < pendingAssets.length; i += PhotosRepositoryConstants.uploadChunkSize) {
+      final int end = (i + PhotosRepositoryConstants.uploadChunkSize < pendingAssets.length) ? i + PhotosRepositoryConstants.uploadChunkSize : pendingAssets.length;
       final List<AssetEntity> chunk = pendingAssets.sublist(i, end);
       final List<MultipartFile> files = <MultipartFile>[];
       final List<String> chunkIds = <String>[];
@@ -367,8 +380,8 @@ class PhotosRepositoryImpl implements PhotosRepository {
     _photosCache.clear();
   }
 
-  Future<Set<String>> _readUploadedAssetIds() async {
-    final String? raw = await storage.read(key: _uploadedAssetIdsKey);
+  Future<Set<String>> _readStringSet(String key) async {
+    final String? raw = await storage.read(key: key);
     if (raw == null || raw.isEmpty) {
       return <String>{};
     }
@@ -380,32 +393,28 @@ class PhotosRepositoryImpl implements PhotosRepository {
     }
   }
 
+  Future<void> _writeStringSet(String key, Set<String> ids) async {
+    await storage.write(key: key, value: jsonEncode(ids.toList()));
+  }
+
+  Future<Set<String>> _readUploadedAssetIds() async {
+    return _readStringSet(PhotosRepositoryConstants.uploadedAssetIdsKey);
+  }
+
   Future<void> _writeUploadedAssetIds(Set<String> ids) async {
-    await storage.write(
-      key: _uploadedAssetIdsKey,
-      value: jsonEncode(ids.toList()),
+    await _writeStringSet(
+      PhotosRepositoryConstants.uploadedAssetIdsKey,
+      ids,
     );
   }
 
   @override
   Future<Set<String>> getFavoriteIds() async {
-    final String? raw = await storage.read(key: _favoritePhotoIdsKey);
-    if (raw == null || raw.isEmpty) {
-      return <String>{};
-    }
-    try {
-      final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
-      return decoded.whereType<String>().toSet();
-    } catch (_) {
-      return <String>{};
-    }
+    return _readStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey);
   }
 
   Future<void> _writeFavoriteIds(Set<String> ids) async {
-    await storage.write(
-      key: _favoritePhotoIdsKey,
-      value: jsonEncode(ids.toList()),
-    );
+    await _writeStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey, ids);
   }
 
   @override
@@ -426,23 +435,11 @@ class PhotosRepositoryImpl implements PhotosRepository {
   }
   @override
   Future<Set<String>> getTrashedIds() async {
-    final String? raw = await storage.read(key: _trashedPhotoIdsKey);
-    if (raw == null || raw.isEmpty) {
-      return <String>{};
-    }
-    try {
-      final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
-      return decoded.whereType<String>().toSet();
-    } catch (_) {
-      return <String>{};
-    }
+    return _readStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey);
   }
 
   Future<void> _writeTrashedIds(Set<String> ids) async {
-    await storage.write(
-      key: _trashedPhotoIdsKey,
-      value: jsonEncode(ids.toList()),
-    );
+    await _writeStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey, ids);
   }
 
   @override

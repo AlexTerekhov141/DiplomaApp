@@ -1,3 +1,4 @@
+import 'package:categorize_app/repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -14,7 +15,6 @@ import '../bloc/themebloc/themebloc.dart';
 import '../repository/AuthRepository/AuthRepository.dart';
 import '../repository/FolderTagsRepository/FolderTagsRepository.dart';
 import '../repository/PhotoRoastRepository/PhotoRoastRepository.dart';
-import '../repository/PhotosRepository/PhotosRepository.dart';
 
 class AppProviders extends StatelessWidget {
   const AppProviders({
@@ -30,7 +30,7 @@ class AppProviders extends StatelessWidget {
       providers: <SingleChildWidget>[
         BlocProvider(
           create: (_) => PhotosBloc(
-            photosRepository: GetIt.I<PhotosRepository>(),
+            repository: GetIt.I<ProccessingRouterRepository>(),
           ),
         ),
         BlocProvider(

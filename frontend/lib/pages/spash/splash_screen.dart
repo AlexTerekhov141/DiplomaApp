@@ -27,15 +27,21 @@ class _SplashScreenState extends State<SplashScreen> {
       listenWhen: (AuthState previous, AuthState current) =>
       previous.status != current.status,
       listener: (BuildContext context, AuthState state) {
-        if (state.status == AuthStatus.authenticated) {
+        if (state.status == AuthStatus.authenticated && state.userChoice) {
           context.router.replaceAll(<PageRouteInfo>[
             const AppRoute(),
           ]);
         }
 
-        if (state.status == AuthStatus.unauthenticated) {
+        if (state.status == AuthStatus.unauthenticated && state.userChoice) {
           context.router.replaceAll(<PageRouteInfo>[
             const LoginRoute(),
+          ]);
+        }
+
+        if (!state.userChoice){
+          context.router.replaceAll(<PageRouteInfo>[
+            const AppMode(),
           ]);
         }
       },

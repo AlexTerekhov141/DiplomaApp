@@ -100,13 +100,13 @@ class _GalleryPageState extends State<GalleryPage>
     );
 
     final PhotosState state = context.read<PhotosBloc>().state;
-    if (state.uploadedCount > 0) {
+    /*if (state.uploadedCount > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Uploaded photos: ${state.uploadedCount}'),
         ),
       );
-    }
+    }*/
   }
 
   void _handleProcessingState(PhotosState state) {

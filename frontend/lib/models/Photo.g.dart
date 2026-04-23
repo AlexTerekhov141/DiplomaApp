@@ -9,6 +9,7 @@ part of 'Photo.dart';
 Map<String, dynamic> _$PhotoToJson(Photo instance) => <String, dynamic>{
   'id': instance.id,
   'image': instance.image,
+  'asset_id': instance.assetId,
   'categoryId': instance.categoryId,
   'category': instance.category,
   'quality_score': instance.qualityScore,

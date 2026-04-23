@@ -4,25 +4,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/Photo.dart';
 import '../../repository/PhotosRepository/PhotosRepository.dart';
+import '../../repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 
 
 class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
-  TagsBloc({required PhotosRepository photosRepository})
-      : _photosRepository = photosRepository,
-        super(TagsBlocState.initial()) {
+  TagsBloc({required this.repository }) : super(TagsBlocState.initial()) {
     on<LoadFolderPhotos>(_onLoadFolderPhotos);
     on<SearchQueryChanged>(_onSearchQueryChanged);
     on<TagSelected>(_onTagSelected);
     on<TagUnselected>(_onTagUnselected);
     on<ClearFilters>(_onClearFilters);
   }
+  final ProccessingRouterRepository repository;
+  Future<PhotosRepository> _activeRepo() => repository.changeMode();
 
-  final PhotosRepository _photosRepository;
 
-  Future<void> _onLoadFolderPhotos(
-      LoadFolderPhotos event,
-      Emitter<TagsBlocState> emit,
-      ) async {
+  Future<void> _onLoadFolderPhotos(LoadFolderPhotos event, Emitter<TagsBlocState> emit,) async {
+    final PhotosRepository _photosRepository = await _activeRepo();
     emit(state.copyWith(isLoading: true, clearError: true));
 
     try {

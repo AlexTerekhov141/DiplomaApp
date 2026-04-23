@@ -42,3 +42,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation("com.google.errorprone:error_prone_annotations:2.23.0")
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+}
