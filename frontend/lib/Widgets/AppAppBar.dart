@@ -6,13 +6,36 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/themebloc/bloc.dart';
 import '../bloc/themebloc/events.dart';
 import '../bloc/themebloc/states.dart';
+import '../constants/colors.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const AppAppBar({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return AppBar(
-      leading: const Icon(Icons.add),
-      actions: <Widget>[_ProfileWidget(context), _switchTheme()],
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Icon(
+              Icons.auto_awesome_rounded,
+              color: Blue.c500,
+              size: 20,
+            ),
+          const SizedBox(width: 10),
+          Text(
+            'Categorize',
+            style: theme.textTheme.titleLarge,
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        _ProfileWidget(context),
+        _switchTheme(),
+        const SizedBox(width: 8),
+      ],
     );
   }
 

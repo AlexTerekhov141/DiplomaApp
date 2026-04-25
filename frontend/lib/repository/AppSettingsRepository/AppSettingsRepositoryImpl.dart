@@ -4,23 +4,36 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppSettingsRepositoryImpl implements AppSettingsRepository {
   AppSettingsRepositoryImpl({required this.storage});
-  static const String _modeKey = 'modekeyv1';
+  static const String _modeKey = 'modekeyv3';
+  static const String _choiceKey = 'processing_mode_choice_v4';
   final FlutterSecureStorage storage;
 
   @override
   Future<ProcessingMode> getProcessingMode() async {
     final String? mode = await storage.read(key: _modeKey);
-    if(mode == null){
+    if (mode == null) {
       return ProcessingMode.online;
-    }else if(mode == ProcessingMode.offline.name){
+    } else if (mode == ProcessingMode.offline.name) {
       return ProcessingMode.offline;
     }
     return ProcessingMode.online;
   }
 
   @override
-  Future<void> setProcessingMode(ProcessingMode mode) async {
-    await storage.write(key: _modeKey, value: mode.name);
+  Future<bool> hasProcessingModeChoice() async {
+    final String? hasChoice = await storage.read(key: _choiceKey);
+    if (hasChoice == 'true') {
+      return true;
+    }
+
+    final String? savedMode = await storage.read(key: _modeKey);
+    return savedMode == ProcessingMode.online.name ||
+        savedMode == ProcessingMode.offline.name;
   }
 
+  @override
+  Future<void> setProcessingMode(ProcessingMode mode) async {
+    await storage.write(key: _modeKey, value: mode.name);
+    await storage.write(key: _choiceKey, value: 'true');
+  }
 }

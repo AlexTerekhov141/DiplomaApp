@@ -12,6 +12,7 @@ class ProfilePreferences extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChoiceCard(
+
       header: 'Preferences',
       titles: const <String>['App settings', 'Log out'],
       icons: const <IconData>[

@@ -17,10 +17,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   static const String _themeModeKey = 'app_theme_mode';
   static const String _gridSizeKey = 'app_gallery_grid_size';
 
-  Future<void> _onLoadSettings(
-    LoadThemeSettingsEvent event,
-    Emitter<ThemeState> emit,
-  ) async {
+  Future<void> _onLoadSettings(LoadThemeSettingsEvent event, Emitter<ThemeState> emit,) async {
     final String? themeModeRaw = await storage.read(key: _themeModeKey);
     final String? gridSizeRaw = await storage.read(key: _gridSizeKey);
 
@@ -32,10 +29,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     );
   }
 
-  Future<void> _onToggleTheme(
-    ToggleThemeEvent event,
-    Emitter<ThemeState> emit,
-  ) async {
+  Future<void> _onToggleTheme(ToggleThemeEvent event, Emitter<ThemeState> emit,) async {
     final ThemeMode nextMode = state.themeMode == ThemeMode.dark
         ? ThemeMode.light
         : ThemeMode.dark;
@@ -46,10 +40,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     emit(state.copyWith(themeMode: nextMode));
   }
 
-  Future<void> _onSetThemeMode(
-    SetThemeModeEvent event,
-    Emitter<ThemeState> emit,
-  ) async {
+  Future<void> _onSetThemeMode(SetThemeModeEvent event, Emitter<ThemeState> emit,) async {
     final ThemeMode themeMode = _themeModeFromValue(event.themeMode);
     await storage.write(
       key: _themeModeKey,
@@ -58,10 +49,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     emit(state.copyWith(themeMode: themeMode));
   }
 
-  Future<void> _onSetGridSize(
-    SetGridSizeEvent event,
-    Emitter<ThemeState> emit,
-  ) async {
+  Future<void> _onSetGridSize(SetGridSizeEvent event, Emitter<ThemeState> emit,) async {
     final GalleryGridSize gridSize = _gridSizeFromValue(event.gridSize);
     await storage.write(key: _gridSizeKey, value: _gridSizeToString(gridSize));
     emit(state.copyWith(gridSize: gridSize));

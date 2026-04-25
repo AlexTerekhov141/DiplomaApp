@@ -13,7 +13,10 @@ import '../bloc/StatisticsBloc/statisticsbloc.dart';
 import '../bloc/themebloc/themebloc.dart';
 
 import '../repository/AuthRepository/AuthRepository.dart';
+import '../repository/AppSettingsRepository/AppSettingsRepository.dart';
 import '../repository/FolderTagsRepository/FolderTagsRepository.dart';
+import '../repository/ForegroundTaskRepository/ForegroundTaskRepository.dart';
+import '../repository/NotificationsRepository/NotificationsRepository.dart';
 import '../repository/PhotoRoastRepository/PhotoRoastRepository.dart';
 
 class AppProviders extends StatelessWidget {
@@ -31,6 +34,8 @@ class AppProviders extends StatelessWidget {
         BlocProvider(
           create: (_) => PhotosBloc(
             repository: GetIt.I<ProccessingRouterRepository>(),
+            notifications: GetIt.I<Notificationsrepository>(),
+            foregroundTaskRepository: GetIt.I<ForegroundTaskRepository>(),
           ),
         ),
         BlocProvider(
@@ -51,11 +56,10 @@ class AppProviders extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) {
-            final AuthBloc authBloc = AuthBloc(
+            return AuthBloc(
               authRepository: GetIt.I<AuthRepository>(),
+              appSettingsRepository: GetIt.I<AppSettingsRepository>(),
             );
-            authBloc.add(AuthStarted());
-            return authBloc;
           },
         ),
         BlocProvider(

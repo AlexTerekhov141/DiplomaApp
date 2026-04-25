@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../models/Processing_mode.dart';
 import '../../models/User.dart';
 
 const Object _errorMessageUnchanged = Object();
@@ -16,7 +17,8 @@ class AuthState extends Equatable {
     required this.status,
     this.isLoading = false,
     this.errorMessage,
-    this.userChoice = false
+    this.userChoice = false,
+    this.processingMode = ProcessingMode.online,
   });
 
   factory AuthState.initial() => AuthState(
@@ -29,6 +31,7 @@ class AuthState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
   final bool userChoice;
+  final ProcessingMode processingMode;
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
 
@@ -37,7 +40,8 @@ class AuthState extends Equatable {
     AuthStatus? status,
     bool? isLoading,
     Object? errorMessage = _errorMessageUnchanged,
-    bool? userChoice
+    bool? userChoice,
+    ProcessingMode? processingMode,
   }) {
     return AuthState(
       user: user ?? this.user,
@@ -46,10 +50,18 @@ class AuthState extends Equatable {
       errorMessage: identical(errorMessage, _errorMessageUnchanged)
           ? this.errorMessage
           : errorMessage as String?,
-      userChoice: userChoice ?? this.userChoice
+      userChoice: userChoice ?? this.userChoice,
+      processingMode: processingMode ?? this.processingMode,
     );
   }
 
   @override
-  List<Object?> get props => <Object?>[user, status, isLoading, errorMessage, userChoice];
+  List<Object?> get props => <Object?>[
+    user,
+    status,
+    isLoading,
+    errorMessage,
+    userChoice,
+    processingMode,
+  ];
 }

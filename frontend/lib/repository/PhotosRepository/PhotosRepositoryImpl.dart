@@ -338,8 +338,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
     for (int i = 0; i < pendingAssets.length; i += PhotosRepositoryConstants.uploadChunkSize) {
       final int end = (i + PhotosRepositoryConstants.uploadChunkSize < pendingAssets.length) ? i + PhotosRepositoryConstants.uploadChunkSize : pendingAssets.length;
       final List<AssetEntity> chunk = pendingAssets.sublist(i, end);
-      final List<MultipartFile> files = <MultipartFile>[];
-      final List<String> chunkIds = <String>[];
+      final List<_UploadItem> chunkItems = <_UploadItem>[];
 
       for (final AssetEntity asset in chunk) {
         final File? file = await asset.file;
@@ -347,33 +346,68 @@ class PhotosRepositoryImpl implements PhotosRepository {
           continue;
         }
         final String fileName = file.path.split(Platform.pathSeparator).last;
-        files.add(await MultipartFile.fromFile(file.path, filename: fileName));
-        chunkIds.add(asset.id);
+        chunkItems.add(
+          _UploadItem(
+            assetId: asset.id,
+            filePath: file.path,
+            fileName: fileName,
+          ),
+        );
       }
 
-      if (files.isEmpty) {
+      if (chunkItems.isEmpty) {
         continue;
       }
 
-      final FormData bulkData = FormData();
-      for (final MultipartFile file in files) {
-        bulkData.files.add(MapEntry<String, MultipartFile>('images', file));
+      try {
+        await _uploadItems(chunkItems);
+        uploadedTotal += chunkItems.length;
+        uploadedIds.addAll(chunkItems.map((item) => item.assetId));
+      } on DioException catch (e) {
+        if (e.response?.statusCode != 400) {
+          rethrow;
+        }
+
+        for (final _UploadItem item in chunkItems) {
+          try {
+            await _uploadItems(<_UploadItem>[item]);
+            uploadedTotal++;
+            uploadedIds.add(item.assetId);
+          } on DioException {
+            continue;
+          }
+        }
       }
 
-      await _withAuthRetry<Response<dynamic>>(
-            () async => dio.post(
-          _bulkUploadUrl,
-          data: bulkData,
-          options: await _authorizedMultipartOptions(),
-        ),
-      );
-
-      uploadedTotal += files.length;
-      uploadedIds.addAll(chunkIds);
       await _writeUploadedAssetIds(uploadedIds);
       _invalidatePhotosCache();
     }
     return uploadedTotal;
+  }
+
+  @override
+  Future<int> processNextBatch({int batchSize = 20}) async {
+    return 0;
+  }
+
+  Future<void> _uploadItems(List<_UploadItem> items) async {
+    final FormData data = FormData();
+    for (final _UploadItem item in items) {
+      data.files.add(
+        MapEntry<String, MultipartFile>(
+          'images',
+          await MultipartFile.fromFile(item.filePath, filename: item.fileName),
+        ),
+      );
+    }
+
+    await _withAuthRetry<Response<dynamic>>(
+      () async => dio.post(
+        _bulkUploadUrl,
+        data: data,
+        options: await _authorizedMultipartOptions(),
+      ),
+    );
   }
 
   void _invalidatePhotosCache() {
@@ -458,4 +492,16 @@ class PhotosRepositoryImpl implements PhotosRepository {
     final Set<String> currentIds = await getTrashedIds();
     return currentIds.contains(assetId);
   }
+}
+
+class _UploadItem {
+  const _UploadItem({
+    required this.assetId,
+    required this.filePath,
+    required this.fileName,
+  });
+
+  final String assetId;
+  final String filePath;
+  final String fileName;
 }

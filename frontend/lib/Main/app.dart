@@ -10,7 +10,6 @@ import '../bloc/FoldersBloc/foldersbloc.dart';
 import '../bloc/PhotosBloc/photosbloc.dart';
 import '../bloc/themebloc/themebloc.dart';
 
-
 final RouteGuard authGuard = RouteGuard();
 final AppRouter _appRouter = AppRouter(authGuard);
 
@@ -25,7 +24,6 @@ class MyApp extends StatelessWidget {
       listener: (BuildContext context, AuthState state) {
         if (state.isAuthenticated) {
           context.read<PhotosBloc>().add(PhotosLoadEvent());
-          context.read<FoldersBloc>().add(LoadFolders());
         } else {
           context.read<PhotosBloc>().add(PhotosResetEvent());
           context.read<FoldersBloc>().add(ClearFolders());

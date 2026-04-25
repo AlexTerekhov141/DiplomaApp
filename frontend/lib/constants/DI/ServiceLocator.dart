@@ -1,5 +1,9 @@
 import 'package:categorize_app/repository/AppSettingsRepository/AppSettingsRepository.dart';
 import 'package:categorize_app/repository/AppSettingsRepository/AppSettingsRepositoryImpl.dart';
+import 'package:categorize_app/repository/ForegroundTaskRepository/ForegroundTaskRepository.dart';
+import 'package:categorize_app/repository/ForegroundTaskRepository/ForegroundTaskRepositoryImpl.dart';
+import 'package:categorize_app/repository/NotificationsRepository/NotificationsRepository.dart';
+import 'package:categorize_app/repository/NotificationsRepository/NotificationsRepositoryImpl.dart';
 import 'package:categorize_app/repository/PhotosRepository/OfflinePhotosRepositoryImpl.dart';
 import 'package:categorize_app/repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'package:categorize_app/repository/ProccessingRouterRepository/ProccessingRouterRepositoryImpl.dart';
@@ -17,6 +21,8 @@ import '../../repository/AuthRepository/AuthRepository.dart';
 import '../../repository/AuthRepository/AuthRepositoryImpl.dart';
 import '../../repository/FolderTagsRepository/FolderTagsRepository.dart';
 import '../../repository/FolderTagsRepository/FolderTagsRepositoryImpl.dart';
+import '../../repository/OfflinePredictionsStorage/OfflinePredictionsStorage.dart';
+import '../../repository/OfflinePredictionsStorage/SqfliteOfflinePredictionsStorage.dart';
 import '../../repository/PhotoRoastRepository/PhotoRoastRepository.dart';
 import '../../repository/PhotoRoastRepository/PhotoRoastRepositoryImpl.dart';
 import '../../repository/PhotosRepository/PhotosRepository.dart';
@@ -35,49 +41,67 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<Dio>(dio);
 
   getIt.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
+    () => AuthRepositoryImpl(
       dio: getIt<Dio>(),
       storage: getIt<FlutterSecureStorage>(),
     ),
   );
 
   getIt.registerLazySingleton<PhotoRoastRepository>(
-        () => PhotoRoastRepositoryImpl(),
+    () => PhotoRoastRepositoryImpl(),
   );
 
   getIt.registerLazySingleton<AppSettingsRepository>(
-      () => AppSettingsRepositoryImpl(storage: getIt<FlutterSecureStorage>())
+    () => AppSettingsRepositoryImpl(storage: getIt<FlutterSecureStorage>()),
   );
 
   getIt.registerLazySingleton<TFliteRepository>(
-          () => TFliteRepositoryImpl()
+    () => TFliteRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<OfflinePredictionsStorage>(
+    () => SqfliteOfflinePredictionsStorage(),
   );
 
   getIt.registerLazySingleton<PhotosRepository>(
-        () => PhotosRepositoryImpl(dio: getIt<Dio>(), storage: getIt<FlutterSecureStorage>(),
+    () => PhotosRepositoryImpl(
+      dio: getIt<Dio>(),
+      storage: getIt<FlutterSecureStorage>(),
     ),
     instanceName: 'online',
   );
 
   getIt.registerLazySingleton<PhotosRepository>(
-        () => Offlinephotosrepositoryimpl(storage: getIt<FlutterSecureStorage>(), tflite: getIt<TFliteRepository>(),),
+    () => Offlinephotosrepositoryimpl(
+      storage: getIt<FlutterSecureStorage>(),
+      tflite: getIt<TFliteRepository>(),
+      predictionsStorage: getIt<OfflinePredictionsStorage>(),
+    ),
     instanceName: 'offline',
   );
 
   getIt.registerLazySingleton<PhotosRepository>(
-        () => getIt<PhotosRepository>(instanceName: 'online'),
+    () => getIt<PhotosRepository>(instanceName: 'online'),
   );
 
   getIt.registerLazySingleton<FolderTagsRepository>(
-        () => FolderTagsRepositoryImpl(getIt<ProccessingRouterRepository>()),
+    () => FolderTagsRepositoryImpl(getIt<ProccessingRouterRepository>()),
   );
 
   getIt.registerLazySingleton<ProccessingRouterRepository>(
-        () => ProcessingRouterRepositoryImpl(
-          appSettings: getIt<AppSettingsRepository>(),
-          onlineRepository: getIt<PhotosRepository>(instanceName: 'online'),
-          offlineRepository: getIt<PhotosRepository>(instanceName: 'offline'),
-        ),
+    () => ProcessingRouterRepositoryImpl(
+      appSettings: getIt<AppSettingsRepository>(),
+      onlineRepository: getIt<PhotosRepository>(instanceName: 'online'),
+      offlineRepository: getIt<PhotosRepository>(instanceName: 'offline'),
+    ),
+  );
+
+  getIt.registerLazySingleton<Notificationsrepository>(
+    () => NotificationsRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<ForegroundTaskRepository>(
+    () => ForegroundTaskRepositoryImpl(),
   );
 
   getIt.registerLazySingleton<EnchanceProcessor>(() => enhanceProcessor);

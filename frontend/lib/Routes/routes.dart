@@ -32,7 +32,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: PhotoRoastRoute.page),
     AutoRoute(page: FavouriteRoute.page),
     AutoRoute(page: TrashRoute.page),
-    AutoRoute(page: AppMode.page)
+    AutoRoute(page: AppMode.page),
+    AutoRoute(page: OfflineCategorizationRoute.page),
   ];
 
 }

@@ -19,14 +19,24 @@ class ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Text(header!, style:  Theme.of(context).textTheme.bodySmall,),
-        ),
+        if (header != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 8),
+            child: Text(
+              header!,
+              style: theme.textTheme.labelMedium,
+            ),
+          ),
         Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide.none
+          ),
           elevation: 0,
           color: Colors.transparent,
           child: Column(
@@ -35,15 +45,14 @@ class ChoiceCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
+                    backgroundColor: theme.colorScheme.surfaceContainerLow,
+                    foregroundColor: theme.colorScheme.onSurface,
                     padding: const EdgeInsets.symmetric(
                       vertical: 14,
                       horizontal: 16,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
                   onPressed: onTapList[index],
@@ -54,7 +63,9 @@ class ChoiceCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           titles[index],
-                          style: TextStyle(fontSize: 15, color: colors[index]),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: colors[index],
+                          ),
                         ),
                       ),
                     ],

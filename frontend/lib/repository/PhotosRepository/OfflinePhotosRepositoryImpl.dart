@@ -7,14 +7,30 @@ import 'package:categorize_app/repository/TFliteRepository/TFliteRepository.dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../OfflinePredictionsStorage/OfflinePredictionsStorage.dart';
 import 'PhotosRepositoryConstants.dart';
 
-class Offlinephotosrepositoryimpl extends PhotosRepository {
-  Offlinephotosrepositoryimpl({required this.storage, required this.tflite});
+class Offlinephotosrepositoryimpl implements PhotosRepository {
+  Offlinephotosrepositoryimpl({
+    required this.storage,
+    required this.tflite,
+    required this.predictionsStorage,
+  });
 
   final FlutterSecureStorage storage;
   final TFliteRepository tflite;
-  static const String _currentModelVersion = 'tflite_model_v2';
+  final OfflinePredictionsStorage predictionsStorage;
+  static const String _currentModelVersion = 'tflite_model_v4';
+  static const String _legacyMigrationKey =
+      'offline_predictions_sqlite_migrated_v1';
+  static const int _defaultBatchSize = 20;
+  static const int _assetPageSize = 100;
+  static const ThumbnailSize _classificationThumbnailSize = ThumbnailSize(
+    224,
+    224,
+  );
+  int _nextProcessingPage = 0;
+  bool _legacyMigrationChecked = false;
 
   @override
   Future<int> bulkUploadLocalPhotos(List<AssetEntity> assets) async {
@@ -23,7 +39,13 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     }
 
     await tflite.ensureInitialized();
-    final Map<String, Map<String, dynamic>> predictions = await _readPredictionsMap();
+    await _migrateLegacyPredictionsIfNeeded();
+    final Map<String, Map<String, dynamic>> predictions =
+        await predictionsStorage.getPredictionsByIds(
+      assets.map((AssetEntity asset) => asset.id),
+    );
+    final Map<String, Map<String, dynamic>> batchPredictions =
+        <String, Map<String, dynamic>>{};
     int processed = 0;
 
     for (final AssetEntity asset in assets) {
@@ -31,20 +53,110 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
       if (!_needsReclassification(cached)) {
         continue;
       }
-      final File? file = await asset.file;
-      if (file == null || !file.existsSync()) {
+      final Uint8List? bytes = await _loadClassificationBytes(asset);
+      if (bytes == null) {
         continue;
       }
-      final Uint8List bytes = await file.readAsBytes();
-      final TFlitePrediction prediction = await tflite.classifyImageBytes(bytes);
-      predictions[asset.id] = _predictionToMap(prediction);
-      processed++;
+      try {
+        final TFlitePrediction prediction = await tflite.classifyImageBytes(
+          bytes,
+        );
+        batchPredictions[asset.id] = _predictionToMap(prediction);
+        processed++;
+      } catch (_) {
+        batchPredictions[asset.id] = _fallbackProcessedPrediction();
+        processed++;
+      }
     }
 
     if (processed > 0) {
-      await _writePredictionsMap(predictions);
+      await predictionsStorage.upsertPredictions(batchPredictions);
     }
 
+    return processed;
+  }
+
+  @override
+  Future<int> processNextBatch({
+    int batchSize = _defaultBatchSize,
+  }) async {
+    final PermissionState permission =
+        await PhotoManager.requestPermissionExtend();
+    if (!permission.hasAccess) {
+      return 0;
+    }
+
+    await tflite.ensureInitialized();
+
+    final AssetPathEntity? recentAlbum = await _getRecentAlbum();
+    if (recentAlbum == null) {
+      return 0;
+    }
+
+    final int totalAssets = await recentAlbum.assetCountAsync;
+    if (totalAssets <= 0) {
+      return 0;
+    }
+
+    await _migrateLegacyPredictionsIfNeeded();
+
+    final int totalPages = (totalAssets / _assetPageSize).ceil();
+    if (_nextProcessingPage >= totalPages) {
+      _nextProcessingPage = 0;
+    }
+
+    final Map<String, Map<String, dynamic>> batchPredictions =
+        <String, Map<String, dynamic>>{};
+
+    int processed = 0;
+    int checkedPages = 0;
+    int page = _nextProcessingPage;
+
+    while (checkedPages < totalPages && processed < batchSize) {
+      final List<AssetEntity> pageItems = await recentAlbum.getAssetListPaged(
+        page: page,
+        size: _assetPageSize,
+      );
+      final Map<String, Map<String, dynamic>> pagePredictions =
+          await predictionsStorage.getPredictionsByIds(
+        pageItems.map((AssetEntity asset) => asset.id),
+      );
+
+      for (final AssetEntity asset in pageItems) {
+        if (processed >= batchSize) {
+          break;
+        }
+
+        final Map<String, dynamic>? cached = pagePredictions[asset.id];
+        if (!_needsReclassification(cached)) {
+          continue;
+        }
+
+        final Uint8List? bytes = await _loadClassificationBytes(asset);
+        if (bytes == null) {
+          batchPredictions[asset.id] = _fallbackProcessedPrediction();
+          processed++;
+          continue;
+        }
+
+        try {
+          final TFlitePrediction prediction = await tflite.classifyImageBytes(
+            bytes,
+          );
+          batchPredictions[asset.id] = _predictionToMap(prediction);
+          processed++;
+        } catch (_) {
+          batchPredictions[asset.id] = _fallbackProcessedPrediction();
+          processed++;
+        }
+      }
+
+      checkedPages++;
+      page = (page + 1) % totalPages;
+    }
+
+    _nextProcessingPage = page;
+    await predictionsStorage.upsertPredictions(batchPredictions);
     return processed;
   }
 
@@ -114,63 +226,28 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
       return <Map<String, dynamic>>[];
     }
 
-    await tflite.ensureInitialized();
+    await _migrateLegacyPredictionsIfNeeded();
+
     final List<AssetEntity> assets = await _loadAllAssets();
-    final Map<String, Map<String, dynamic>> predictions = await _readPredictionsMap();
-    final Set<String> existingAssetIds = assets.map((AssetEntity a) => a.id).toSet();
-    bool isPredictionsChanged = false;
+    final Set<String> existingAssetIds =
+        assets.map((AssetEntity a) => a.id).toSet();
+    final Map<String, Map<String, dynamic>> predictions =
+        await predictionsStorage.getPredictionsByIds(existingAssetIds);
     final List<Map<String, dynamic>> result = <Map<String, dynamic>>[];
 
-    // Drop stale prediction records for files that no longer exist on device.
-    final List<String> staleKeys = predictions.keys
-        .where((String key) => !existingAssetIds.contains(key))
-        .toList();
-    if (staleKeys.isNotEmpty) {
-      for (final String key in staleKeys) {
-        predictions.remove(key);
-      }
-      isPredictionsChanged = true;
-    }
+    await predictionsStorage.deleteMissingAssets(existingAssetIds);
 
     for (final AssetEntity asset in assets) {
-      Map<String, dynamic>? prediction = predictions[asset.id];
-
-      if (_needsReclassification(prediction, forceRefresh: forceRefresh)) {
-        final File? file = await asset.file;
-        if (file != null && file.existsSync()) {
-          final Uint8List bytes = await file.readAsBytes();
-          final TFlitePrediction classified =
-              await tflite.classifyImageBytes(bytes);
-          prediction = _predictionToMap(classified);
-          predictions[asset.id] = prediction;
-          isPredictionsChanged = true;
-        } else {
-          prediction = <String, dynamic>{
-            'label': 'uncategorized',
-            'confidence': 0.0,
-            'processed': false,
-          };
-        }
-      }
-
-      final Map<String, dynamic> safePrediction =
-          prediction ??
-          <String, dynamic>{
-            'label': 'uncategorized',
-            'confidence': 0.0,
-            'processed': false,
-            'tags': <String>['uncategorized'],
-            'model_version': _currentModelVersion,
-            'updated_at': DateTime.now().toIso8601String(),
-          };
+      final Map<String, dynamic>? prediction = predictions[asset.id];
+      final Map<String, dynamic> safePrediction = _needsReclassification(
+        prediction,
+      )
+          ? _unprocessedPrediction()
+          : prediction ?? _unprocessedPrediction();
       final Map<String, dynamic> photo = _toPhotoMap(asset, safePrediction);
       if (_matchesFilters(photo, tag: tag, isProcessed: isProcessed)) {
         result.add(photo);
       }
-    }
-
-    if (isPredictionsChanged) {
-      await _writePredictionsMap(predictions);
     }
 
     return result;
@@ -178,20 +255,22 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
 
   @override
   Future<Map<String, int>> getRemoteProcessingStats() async {
-    final List<AssetEntity> assets = await _loadAllAssets();
-    final Map<String, Map<String, dynamic>> predictions =
-        await _readPredictionsMap();
+    await _migrateLegacyPredictionsIfNeeded();
 
-    int processed = 0;
-    for (final AssetEntity asset in assets) {
-      final Map<String, dynamic>? prediction = predictions[asset.id];
-      final bool isAssetProcessed = (prediction?['processed'] as bool?) ?? false;
-      if (isAssetProcessed) {
-        processed++;
-      }
+    final AssetPathEntity? recentAlbum = await _getRecentAlbum();
+    if (recentAlbum == null) {
+      return <String, int>{
+        'total': 0,
+        'processed': 0,
+        'pending': 0,
+      };
     }
 
-    final int total = assets.length;
+    final int total = await recentAlbum.assetCountAsync;
+    final int rawProcessed = await predictionsStorage.countProcessed(
+      _currentModelVersion,
+    );
+    final int processed = rawProcessed > total ? total : rawProcessed;
     final int pending = total - processed > 0 ? total - processed : 0;
 
     return <String, int>{
@@ -295,7 +374,7 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     await _writeTrashedIds(currentIds);
   }
 
-  Future<List<AssetEntity>> _loadAllAssets() async {
+  Future<AssetPathEntity?> _getRecentAlbum() async {
     final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       type: RequestType.image,
       onlyAll: true,
@@ -307,18 +386,24 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     );
 
     if (albums.isEmpty) {
+      return null;
+    }
+    return albums.first;
+  }
+
+  Future<List<AssetEntity>> _loadAllAssets() async {
+    final AssetPathEntity? recentAlbum = await _getRecentAlbum();
+    if (recentAlbum == null) {
       return <AssetEntity>[];
     }
 
-    final AssetPathEntity recentAlbum = albums.first;
-    const int pageSize = 100;
     int page = 0;
     final List<AssetEntity> all = <AssetEntity>[];
 
     while (true) {
       final List<AssetEntity> pageItems = await recentAlbum.getAssetListPaged(
         page: page,
-        size: pageSize,
+        size: _assetPageSize,
       );
       if (pageItems.isEmpty) {
         break;
@@ -330,14 +415,53 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     return all;
   }
 
-  Future<Map<String, Map<String, dynamic>>> _readPredictionsMap() async {
+  Future<Uint8List?> _loadClassificationBytes(AssetEntity asset) async {
+    final Uint8List? thumbnailBytes = await asset.thumbnailDataWithSize(
+      _classificationThumbnailSize,
+      quality: 85,
+    );
+    if (thumbnailBytes != null && thumbnailBytes.isNotEmpty) {
+      return thumbnailBytes;
+    }
+
+    final File? file = await asset.file;
+    if (file == null || !file.existsSync()) {
+      return null;
+    }
+    return file.readAsBytes();
+  }
+
+  Future<void> _migrateLegacyPredictionsIfNeeded() async {
+    if (_legacyMigrationChecked) {
+      return;
+    }
+
+    final String? migrated = await storage.read(key: _legacyMigrationKey);
+    if (migrated == 'true') {
+      _legacyMigrationChecked = true;
+      return;
+    }
+
+    final Map<String, Map<String, dynamic>> legacyPredictions =
+        await _readLegacyPredictionsMap();
+    if (legacyPredictions.isNotEmpty) {
+      await predictionsStorage.upsertPredictions(legacyPredictions);
+    }
+
+    await storage.write(key: _legacyMigrationKey, value: 'true');
+    await storage.delete(key: PhotosRepositoryConstants.offlinePredictionsKey);
+    _legacyMigrationChecked = true;
+  }
+
+  Future<Map<String, Map<String, dynamic>>> _readLegacyPredictionsMap() async {
     final String? raw =
         await storage.read(key: PhotosRepositoryConstants.offlinePredictionsKey);
     if (raw == null || raw.isEmpty) {
       return <String, Map<String, dynamic>>{};
     }
     try {
-      final Map<String, dynamic> decoded = jsonDecode(raw) as Map<String, dynamic>;
+      final Map<String, dynamic> decoded =
+          jsonDecode(raw) as Map<String, dynamic>;
       final Map<String, Map<String, dynamic>> result =
           <String, Map<String, dynamic>>{};
       decoded.forEach((String key, dynamic value) {
@@ -351,15 +475,6 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     }
   }
 
-  Future<void> _writePredictionsMap(
-    Map<String, Map<String, dynamic>> predictions,
-  ) async {
-    await storage.write(
-      key: PhotosRepositoryConstants.offlinePredictionsKey,
-      value: jsonEncode(predictions),
-    );
-  }
-
   Map<String, dynamic> _predictionToMap(TFlitePrediction prediction) {
     return <String, dynamic>{
       'label': prediction.label,
@@ -371,10 +486,29 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
     };
   }
 
-  bool _needsReclassification(
-    Map<String, dynamic>? prediction, {
-    bool forceRefresh = false,
-  }) {
+  Map<String, dynamic> _unprocessedPrediction() {
+    return <String, dynamic>{
+      'label': 'uncategorized',
+      'confidence': 0.0,
+      'processed': false,
+      'tags': <String>['uncategorized'],
+      'model_version': _currentModelVersion,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  Map<String, dynamic> _fallbackProcessedPrediction() {
+    return <String, dynamic>{
+      'label': 'uncategorized',
+      'confidence': 0.0,
+      'processed': true,
+      'tags': <String>['uncategorized'],
+      'model_version': _currentModelVersion,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  bool _needsReclassification(Map<String, dynamic>? prediction) {
     if (prediction == null) {
       return true;
     }
@@ -387,9 +521,6 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
       return true;
     }
 
-    if (forceRefresh) {
-      return false;
-    }
     return false;
   }
 
@@ -416,7 +547,7 @@ class Offlinephotosrepositoryimpl extends PhotosRepository {
         'name': categoryName,
       },
       'quality_score': confidence,
-      'is_processed': (prediction['processed'] as bool?) ?? true,
+      'is_processed': (prediction['processed'] as bool?) ?? false,
       'tags': tags,
       'asset_id': asset.id,
     };

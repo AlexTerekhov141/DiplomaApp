@@ -12,6 +12,13 @@ class PhotosState extends Equatable {
     this.remoteTotalCount = 0,
     this.remoteProcessedCount = 0,
     this.remotePendingCount = 0,
+    this.isLocalProcessing = false,
+    this.isLocalProcessingPaused = false,
+    this.localProcessedCount = 0,
+    this.localTotalCount = 0,
+    this.localPendingCount = 0,
+    this.localProcessingMessage,
+    this.localProcessingError,
     this.error,
     this.syncError,
     this.favoriteIds = const <String>{},
@@ -29,6 +36,13 @@ class PhotosState extends Equatable {
   final int remoteTotalCount;
   final int remoteProcessedCount;
   final int remotePendingCount;
+  final bool isLocalProcessing;
+  final bool isLocalProcessingPaused;
+  final int localProcessedCount;
+  final int localTotalCount;
+  final int localPendingCount;
+  final String? localProcessingMessage;
+  final String? localProcessingError;
   final String? error;
   final String? syncError;
   final Set<String> favoriteIds;
@@ -53,6 +67,13 @@ class PhotosState extends Equatable {
     int? remoteTotalCount,
     int? remoteProcessedCount,
     int? remotePendingCount,
+    bool? isLocalProcessing,
+    bool? isLocalProcessingPaused,
+    int? localProcessedCount,
+    int? localTotalCount,
+    int? localPendingCount,
+    String? localProcessingMessage,
+    String? localProcessingError,
     String? error,
     String? syncError,
     Set<String>? favoriteIds,
@@ -68,6 +89,15 @@ class PhotosState extends Equatable {
       remoteTotalCount: remoteTotalCount ?? this.remoteTotalCount,
       remoteProcessedCount: remoteProcessedCount ?? this.remoteProcessedCount,
       remotePendingCount: remotePendingCount ?? this.remotePendingCount,
+      isLocalProcessing: isLocalProcessing ?? this.isLocalProcessing,
+      isLocalProcessingPaused:
+          isLocalProcessingPaused ?? this.isLocalProcessingPaused,
+      localProcessedCount: localProcessedCount ?? this.localProcessedCount,
+      localTotalCount: localTotalCount ?? this.localTotalCount,
+      localPendingCount: localPendingCount ?? this.localPendingCount,
+      localProcessingMessage:
+          localProcessingMessage ?? this.localProcessingMessage,
+      localProcessingError: localProcessingError,
       error: error,
       syncError: syncError,
       favoriteIds: favoriteIds ?? this.favoriteIds,
@@ -85,6 +115,13 @@ class PhotosState extends Equatable {
     remoteTotalCount,
     remoteProcessedCount,
     remotePendingCount,
+    isLocalProcessing,
+    isLocalProcessingPaused,
+    localProcessedCount,
+    localTotalCount,
+    localPendingCount,
+    localProcessingMessage,
+    localProcessingError,
     error,
     syncError,
     favoriteIds,

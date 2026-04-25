@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:categorize_app/repository/NotificationsRepository/NotificationsRepository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -14,7 +15,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await configureDependencies();
-
+  await GetIt.I<Notificationsrepository>().init();
   final Talker talker = GetIt.I<Talker>();
 
   FlutterError.onError = (FlutterErrorDetails details) {

@@ -29,7 +29,7 @@ class _FoldersPageState extends State<FoldersPage>
     foldersBloc.add(LoadFolders(forceRefresh: true));
 
     await foldersBloc.stream.firstWhere(
-          (FoldersState state) => !state.isLoading,
+      (FoldersState state) => !state.isLoading,
     );
   }
 
@@ -47,13 +47,13 @@ class _FoldersPageState extends State<FoldersPage>
             Expanded(
               child: BlocBuilder<FoldersBloc, FoldersState>(
                 builder: (BuildContext context, FoldersState state) {
-                  if (state.isLoading) {
+                  if (state.isLoading && state.folders.isNotEmpty) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
 
-                  if (state.error != null) {
+                  if (state.error != null && state.folders.isEmpty) {
                     return FoldersErrorState(message: state.error!);
                   }
 
@@ -61,18 +61,19 @@ class _FoldersPageState extends State<FoldersPage>
                     onRefresh: _refreshFolders,
                     child: LayoutBuilder(
                       builder: (
-                          BuildContext context,
-                          BoxConstraints constraints,
-                          ) {
+                        BuildContext context,
+                        BoxConstraints constraints,
+                      ) {
                         if (state.folders.isEmpty) {
                           return const FoldersEmptyState();
                         }
 
-                        final int crossAxisCount = constraints.maxWidth >= 1000
-                            ? 4
-                            : constraints.maxWidth >= 700
-                            ? 3
-                            : 2;
+                        final int crossAxisCount =
+                            constraints.maxWidth >= 1000
+                                ? 4
+                                : constraints.maxWidth >= 700
+                                    ? 3
+                                    : 2;
 
                         return FoldersGrid(
                           folders: state.folders,

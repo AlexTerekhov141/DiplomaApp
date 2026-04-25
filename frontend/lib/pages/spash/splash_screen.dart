@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../Routes/routes.gr.dart';
 import '../../bloc/AuthBloc/authbloc.dart';
-
+import '../../models/Processing_mode.dart';
 
 @RoutePage()
 class SplashScreen extends StatefulWidget {
@@ -25,23 +25,38 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listenWhen: (AuthState previous, AuthState current) =>
-      previous.status != current.status,
+          previous.status != current.status ||
+          previous.userChoice != current.userChoice ||
+          previous.processingMode != current.processingMode,
       listener: (BuildContext context, AuthState state) {
-        if (state.status == AuthStatus.authenticated && state.userChoice) {
-          context.router.replaceAll(<PageRouteInfo>[
-            const AppRoute(),
-          ]);
+        if (state.isLoading || state.status == AuthStatus.unknown) {
+          return;
         }
 
-        if (state.status == AuthStatus.unauthenticated && state.userChoice) {
-          context.router.replaceAll(<PageRouteInfo>[
-            const LoginRoute(),
-          ]);
-        }
-
-        if (!state.userChoice){
+        if (!state.userChoice) {
           context.router.replaceAll(<PageRouteInfo>[
             const AppMode(),
+          ]);
+          return;
+        }
+
+        if (state.processingMode == ProcessingMode.offline) {
+          context.router.replaceAll(<PageRouteInfo>[
+            AppRoute(),
+          ]);
+          return;
+        }
+
+        if (state.status == AuthStatus.authenticated) {
+          context.router.replaceAll(<PageRouteInfo>[
+            AppRoute(),
+          ]);
+          return;
+        }
+
+        if (state.status == AuthStatus.unauthenticated) {
+          context.router.replaceAll(<PageRouteInfo>[
+            const LoginRoute(),
           ]);
         }
       },

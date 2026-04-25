@@ -28,6 +28,9 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
             ? rawCategory
             : null;
         final String imageUrl = (photo['image'] ?? '').toString();
+        final String assetId = (photo['asset_id'] ?? '').toString();
+        final String previewSource =
+            imageUrl.isNotEmpty ? imageUrl : 'asset:$assetId';
 
         final String folderId = category?['id']?.toString() ?? 'uncategorized';
         final String folderName = category?['name']?.toString() ?? 'Uncategorized';
@@ -35,8 +38,8 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
         final Folder? existing = grouped[folderId];
         if (existing == null) {
           final List<String> previewUrls = <String>[];
-          if (imageUrl.isNotEmpty) {
-            previewUrls.add(imageUrl);
+          if (imageUrl.isNotEmpty || assetId.isNotEmpty) {
+            previewUrls.add(previewSource);
           }
           grouped[folderId] = Folder(
             id: folderId,
@@ -46,8 +49,9 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
           );
         } else {
           final List<String> previewUrls = List<String>.from(existing.previewUrls);
-          if (imageUrl.isNotEmpty && previewUrls.length < 4) {
-            previewUrls.add(imageUrl);
+          if ((imageUrl.isNotEmpty || assetId.isNotEmpty) &&
+              previewUrls.length < 4) {
+            previewUrls.add(previewSource);
           }
           grouped[folderId] = Folder(
             id: existing.id,

@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
             _showErrorSnackBar(context, state.errorMessage!);
           }
           if (state.isAuthenticated) {
-            context.router.replaceAll(<PageRouteInfo<dynamic>>[const AppRoute()]);
+            context.router.replaceAll(<PageRouteInfo<dynamic>>[AppRoute()]);
           }
         },
         child: ResponsiveFrame(
@@ -89,7 +89,15 @@ class _LoginPageState extends State<LoginPage> {
                         child: SingleChildScrollView(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
+                              Text(
+                                'Welcome back',
+                                textAlign: TextAlign.center,
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium,
+                              ),
+                              const SizedBox(height: 28),
                               BlocBuilder<AuthBloc, AuthState>(
                                 buildWhen:
                                     (AuthState previous, AuthState current) =>
@@ -99,8 +107,10 @@ class _LoginPageState extends State<LoginPage> {
                                     (BuildContext context, AuthState state) {
                                   return TextFormField(
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter a login',
+                                      labelText: 'Email',
+                                      hintText: 'Enter your email',
+                                      prefixIcon:
+                                          Icon(Icons.mail_outline_rounded),
                                     ),
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (String? value) {
@@ -128,8 +138,10 @@ class _LoginPageState extends State<LoginPage> {
                                   return TextFormField(
                                     obscureText: true,
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter a password',
+                                      labelText: 'Password',
+                                      hintText: 'Enter your password',
+                                      prefixIcon:
+                                          Icon(Icons.lock_outline_rounded),
                                     ),
                                     validator: (String? value) {
                                       if (value == null || value.length < 8) {
@@ -166,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.stretch,
                                     children: <Widget>[
-                                      ElevatedButton(
+                                      FilledButton(
                                         onPressed: () {
                                           if (_formKey.currentState!
                                               .validate()) {
@@ -186,6 +198,16 @@ class _LoginPageState extends State<LoginPage> {
                                         },
                                         child: const Text(
                                           "Don't have an Account?",
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          context.router.push(
+                                            const AppMode(),
+                                          );
+                                        },
+                                        child: const Text(
+                                          "Choose processing modes",
                                         ),
                                       ),
                                     ],

@@ -38,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const AppRoute(),
+            AppRoute(),
             const ProfileRoute(),
           ]);
         }
@@ -46,7 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     return Scaffold(
-      appBar: AppAppBar(),
+      //appBar: AppAppBar(),
       body: ResponsiveFrame(
         maxWidth: 720,
         child: BlocListener<AuthBloc, AuthState>(
@@ -59,7 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) {
                   context.router.replaceAll(<PageRouteInfo<dynamic>>[
-                    const AppRoute(),
+                    AppRoute(),
                     const ProfileRoute(),
                   ]);
                 }

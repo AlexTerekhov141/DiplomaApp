@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:talker/talker.dart';
 
+import '../../models/Processing_mode.dart';
 import '../../models/User.dart';
+import '../../repository/AppSettingsRepository/AppSettingsRepository.dart';
 import '../../repository/AuthRepository/AuthRepository.dart';
 import 'event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc({required this.authRepository}) : super(AuthState.initial()) {
+  AuthBloc({required this.authRepository, required this.appSettingsRepository,}) : super(AuthState.initial()) {
     on<AuthEmailChanged>(_onEmailChanged);
     on<AuthPasswordChanged>(_onPasswordChanged);
     on<AuthPasswordConfirmChanged>(_onPasswordConfirmChanged);
@@ -23,9 +25,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStarted>(_onStarted);
     on<AuthProfileUpdate>(_onProfileUpdate);
     on<AuthProfileImageUpdate>(_onProfileImageUpdate);
+
+    on<AuthProfileUserChoiceUpdate>(_onAuthProfileUserChoiceUpdate);
   }
 
   final AuthRepository authRepository;
+  final AppSettingsRepository appSettingsRepository;
+
+  Future<void> _onAuthProfileUserChoiceUpdate(AuthProfileUserChoiceUpdate event, Emitter<AuthState> emit,) async {
+    try {
+      await appSettingsRepository.setProcessingMode(event.processingMode);
+      emit(state.copyWith(
+        userChoice: true,
+        processingMode: event.processingMode,
+      ));
+    } catch (e, st) {
+      GetIt.I<Talker>().handle(e, st);
+    }
+  }
 
   void _onEmailChanged(AuthEmailChanged event, Emitter<AuthState> emit,) {
     emit(state.copyWith(
@@ -145,14 +162,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     emit(AuthState.initial().copyWith(
       status: AuthStatus.unauthenticated,
+      userChoice: state.userChoice,
+      processingMode: state.processingMode,
     ));
   }
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit,) async {
+    final bool hasModeChoice =
+        await appSettingsRepository.hasProcessingModeChoice();
+    final ProcessingMode processingMode =
+        await appSettingsRepository.getProcessingMode();
+
     emit(state.copyWith(
       status: AuthStatus.unknown,
       isLoading: true,
       errorMessage: null,
+      userChoice: hasModeChoice,
+      processingMode: processingMode,
     ));
 
     final String? token = await authRepository.getAccessToken();

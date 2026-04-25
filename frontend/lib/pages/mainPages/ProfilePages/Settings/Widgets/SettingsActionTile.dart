@@ -19,15 +19,17 @@ class SettingsActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return ListTile(
       leading: SettingsTileIcon(icon: icon),
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: theme.textTheme.titleSmall,
       ),
       subtitle: Text(
         subtitle,
-        style: Theme.of(context).textTheme.bodySmall,
+        style: theme.textTheme.bodySmall,
       ),
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: onTap,

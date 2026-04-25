@@ -103,7 +103,7 @@ class _PhotoViewerPageState extends State<PhotoViewerPage> {
     final AssetEntity currentPhoto = _viewerPhotos[_currentIndex];
     final double screenHeight = MediaQuery.of(context).size.height;
     final double dragProgress =
-        (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
+    (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
     final double scale = 1 - (dragProgress * 0.12);
     final double bgOpacity = 1 - (dragProgress * 0.55);
 
@@ -197,7 +197,7 @@ class _NetworkPhotoViewerPageState extends State<NetworkPhotoViewerPage> {
     }
 
     final int byId = _viewerPhotos.indexWhere(
-      (Photo p) => p.id == widget.photo.id,
+          (Photo p) => p.id == widget.photo.id,
     );
     return byId >= 0 ? byId : 0;
   }
@@ -253,7 +253,7 @@ class _NetworkPhotoViewerPageState extends State<NetworkPhotoViewerPage> {
     final Photo currentPhoto = _viewerPhotos[_currentIndex];
     final double screenHeight = MediaQuery.of(context).size.height;
     final double dragProgress =
-        (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
+    (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
     final double scale = 1 - (dragProgress * 0.12);
     final double bgOpacity = 1 - (dragProgress * 0.55);
 

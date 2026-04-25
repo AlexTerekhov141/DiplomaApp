@@ -17,6 +17,8 @@ abstract class PhotosRepository {
 
   Future<int> bulkUploadLocalPhotos(List<AssetEntity> assets);
 
+  Future<int> processNextBatch({int batchSize = 20});
+
   Future<Set<String>> getFavoriteIds();
   Future<void> toggleFavorite(String assetId);
   Future<bool> isFavorite(String assetId);

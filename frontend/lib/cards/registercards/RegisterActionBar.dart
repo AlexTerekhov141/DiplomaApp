@@ -24,12 +24,6 @@ class RegisterActionBar extends StatelessWidget {
           Expanded(
             child: OutlinedButton(
               onPressed: isLoading ? null : onBack,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
               child: const Text('Back'),
             ),
           ),
@@ -38,17 +32,14 @@ class RegisterActionBar extends StatelessWidget {
           flex: 2,
           child: FilledButton(
             onPressed: isLoading ? null : onContinue,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
             child: isLoading
                 ? const SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.4),
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.4,
+              ),
             )
                 : Text(isLastStep ? 'Create account' : 'Continue'),
           ),
