@@ -1,5 +1,11 @@
 import 'package:categorize_app/repository/AppSettingsRepository/AppSettingsRepository.dart';
 import 'package:categorize_app/repository/AppSettingsRepository/AppSettingsRepositoryImpl.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupAnalyzer/DuplicateAnalyzer.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupAnalyzer/ImageQualityAnalyzer.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupAnalyzer/MetadataCleanupAnalyzer.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupAnalyzer/OcrCleanupAnalyzer.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupRepository.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupStorage/CleanupStorage.dart';
 import 'package:categorize_app/repository/ForegroundTaskRepository/ForegroundTaskRepository.dart';
 import 'package:categorize_app/repository/ForegroundTaskRepository/ForegroundTaskRepositoryImpl.dart';
 import 'package:categorize_app/repository/NotificationsRepository/NotificationsRepository.dart';
@@ -12,6 +18,7 @@ import 'package:categorize_app/repository/TFliteRepository/TFliteRepositoryImpl.
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 import '../../bloc/EnchanceBloc/bloc.dart';
@@ -19,6 +26,9 @@ import '../../models/EnchanceProcessor.dart';
 import '../../models/Saver.dart';
 import '../../repository/AuthRepository/AuthRepository.dart';
 import '../../repository/AuthRepository/AuthRepositoryImpl.dart';
+import '../../repository/CleanupRepository/CleanupAnalyzer/CleanupScoreCalculator.dart';
+import '../../repository/CleanupRepository/CleanupRepositoryImpl.dart';
+import '../../repository/CleanupRepository/CleanupStorage/SqfliteCleanupStorage.dart';
 import '../../repository/FolderTagsRepository/FolderTagsRepository.dart';
 import '../../repository/FolderTagsRepository/FolderTagsRepositoryImpl.dart';
 import '../../repository/OfflinePredictionsStorage/OfflinePredictionsStorage.dart';
@@ -35,7 +45,7 @@ Future<void> configureDependencies() async {
   final Talker talker = TalkerFlutter.init();
   const FlutterSecureStorage storage = FlutterSecureStorage();
   final Dio dio = createDio();
-
+  final TextRecognizer textRecognizer = TextRecognizer();
   getIt.registerSingleton<Talker>(talker);
   getIt.registerSingleton<FlutterSecureStorage>(storage);
   getIt.registerSingleton<Dio>(dio);
@@ -106,4 +116,36 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<EnchanceProcessor>(() => enhanceProcessor);
   getIt.registerLazySingleton<EnchanceSaver>(() => enhanceSaver);
+
+  getIt.registerLazySingleton<CleanupStorage>(
+          () => SqfliteCleanupStorage()
+  );
+  getIt.registerLazySingleton<MetadataCleanupAnalyzer>(
+      () => MetadataCleanupAnalyzer()
+  );
+  getIt.registerLazySingleton<ImageQualityAnalyzer>(
+      () => ImageQualityAnalyzer()
+  );
+  getIt.registerLazySingleton<DuplicateAnalyzer>(
+      () => DuplicateAnalyzer()
+  );
+  getIt.registerLazySingleton<OcrCleanupAnalyzer>(
+      () => OcrCleanupAnalyzer(textRecognizer: textRecognizer)
+  );
+  getIt.registerLazySingleton<CleanupScoreCalculator>(
+      () => CleanupScoreCalculator()
+  );
+  getIt.registerLazySingleton<CleanupRepository>(
+      () => CleanupRepositoryImpl(
+          storage: getIt<CleanupStorage>(),
+          metadataAnalyzer: getIt<MetadataCleanupAnalyzer>(),
+          imageQualityAnalyzer: getIt<ImageQualityAnalyzer>(),
+          duplicateAnalyzer: getIt<DuplicateAnalyzer>(),
+          ocrAnalyzer: getIt<OcrCleanupAnalyzer>(),
+          scoreCalculator: getIt<CleanupScoreCalculator>(),
+          enableMetadataAnalyzer: true,
+          enableImageQualityAnalyzer: true,
+          enableDuplicateAnalyzer: false,
+          enableOcrAnalyzer: true)
+  );
 }

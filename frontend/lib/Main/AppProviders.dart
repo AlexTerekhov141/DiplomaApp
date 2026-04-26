@@ -1,3 +1,5 @@
+import 'package:categorize_app/bloc/CleanupBloc/cleanupbloc.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupRepository.dart';
 import 'package:categorize_app/repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -73,6 +75,7 @@ class AppProviders extends StatelessWidget {
             repository: GetIt.I<PhotoRoastRepository>(),
           ),
         ),
+        BlocProvider(create: (_) => CleanupBloc(repository: GetIt.I<CleanupRepository>()))
       ],
       child: child,
     );

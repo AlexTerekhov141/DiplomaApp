@@ -1,4 +1,7 @@
 
+import 'package:categorize_app/Routes/routes.gr.dart';
+import 'package:flutter/material.dart';
+
 import '../../models/Features/Feature.dart';
 
 final List<Feature> features = <Feature>[
@@ -12,4 +15,9 @@ final List<Feature> features = <Feature>[
     icon: Icons.whatshot,
     route: const PhotoRoastRoute(),
   ),*/
+  Feature(
+    name: 'Suggested Trash',
+    icon: Icons.delete,
+    route: const Suggestedtrashpage(),
+  ),
 ];
