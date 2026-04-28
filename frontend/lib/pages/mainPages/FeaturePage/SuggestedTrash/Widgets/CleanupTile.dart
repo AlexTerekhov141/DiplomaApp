@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../models/CleanUp/CleanupSuggestionGroup.dart';
+import '../../../Photos/Folders/Widgets/FolderPreview.dart';
 import '../SuggestedTrashDetailPage.dart';
 
 class Cleanuptile extends StatelessWidget {
@@ -32,6 +33,12 @@ class Cleanuptile extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
+            FolderPreview(
+              previewUrls: group.previewAssetIds
+                  .take(4)
+                  .map((String assetId) => 'asset:$assetId')
+                  .toList(),
+            ),
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -74,7 +81,7 @@ class Cleanuptile extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${group.count}',
+                        '${group.count} photos',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: Colors.white.withOpacity(0.9),
                         ),

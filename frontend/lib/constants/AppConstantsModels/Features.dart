@@ -10,11 +10,11 @@ final List<Feature> features = <Feature>[
     icon: Icons.auto_awesome,
     route: const EnhanceRoute(),
   ),*/
-  /*Feature(
+  Feature(
     name: 'Photo Roast',
     icon: Icons.whatshot,
     route: const PhotoRoastRoute(),
-  ),*/
+  ),
   Feature(
     name: 'Suggested Trash',
     icon: Icons.delete,

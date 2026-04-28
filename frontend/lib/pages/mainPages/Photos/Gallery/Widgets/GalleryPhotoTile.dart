@@ -1,28 +1,39 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
-import '../../../../../Routes/routes.gr.dart';
 import '../../../../../bloc/PhotosBloc/bloc.dart';
 import '../../../../../bloc/PhotosBloc/events.dart';
+import '../../Photo/Photo.dart';
 
 class GalleryPhotoTile extends StatelessWidget {
   const GalleryPhotoTile({
     super.key,
     required this.photo,
+    this.photos,
+    this.initialIndex,
     this.isInTrash = false,
   });
 
   final AssetEntity photo;
+  final List<AssetEntity>? photos;
+  final int? initialIndex;
   final bool isInTrash;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.router.push(PhotoViewerRoute(photo: photo));
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => PhotoViewerPage(
+              photo: photo,
+              photos: photos,
+              initialIndex: initialIndex,
+            ),
+          ),
+        );
       },
       onLongPress: () async {
         final bool? confirmed = await showModalBottomSheet<bool>(

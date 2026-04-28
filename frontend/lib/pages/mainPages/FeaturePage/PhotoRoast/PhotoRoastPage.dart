@@ -1,6 +1,9 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../bloc/PhotoRoastBloc/event.dart';
+import '../../../../bloc/PhotoRoastBloc/photoroastbloc.dart';
 import 'Widgets/PhotoRoastView.dart';
 
 
@@ -14,21 +17,18 @@ class PhotoRoastPage extends StatefulWidget {
 }
 
 class _PhotoRoastPageState extends State<PhotoRoastPage> {
-  bool _showIssues = false;
-
-  void _toggleIssues() {
-    setState(() {
-      _showIssues = !_showIssues;
-    });
+  @override
+  void initState() {
+    super.initState();
+    context.read<PhotoRoastBloc>().add(
+          const PhotoRoastQualityGroupsRequested(),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PhotoRoastView(
-        showIssues: _showIssues,
-        onToggleIssues: _toggleIssues,
-      ),
+    return const Scaffold(
+      body: PhotoRoastView(),
     );
   }
 }

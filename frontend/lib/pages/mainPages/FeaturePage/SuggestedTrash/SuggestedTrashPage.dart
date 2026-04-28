@@ -107,35 +107,27 @@ class SuggestedTrashProgressHeader extends StatelessWidget{
                 children: <Widget>[
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: state.isAnalyzing
-                          ? null
-                          : () {
-                              context.read<CleanupBloc>().add(StartCleanupAnalysis());
-                            },
+                      onPressed: state.isAnalyzing ? null : () {context.read<CleanupBloc>().add(StartCleanupAnalysis());},
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Start'),
+                      label: const Text(''),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: state.isAnalyzing ? () {
-                              context.read<CleanupBloc>().add(StopCleanupAnalysis());
-                            }
-                          : null,
+                      onPressed: state.isAnalyzing
+                          ? () {context.read<CleanupBloc>().add(StopCleanupAnalysis());} : null,
                       icon: const Icon(Icons.stop_rounded),
-                      label: const Text('Stop'),
+                      label: const Text(''),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: hasSuggestions && !state.isAnalyzing ? () {
-                              context.read<CleanupBloc>().add(MoveAllCleanupSuggestionsToTrash());
-                            }
-                          : null,
+                      onPressed: hasSuggestions && !state.isAnalyzing
+                          ? () {context.read<CleanupBloc>().add(MoveAllCleanupSuggestionsToTrash());} : null,
                       icon: const Icon(Icons.delete_sweep_outlined),
-                      label: const Text('Trash'),
+                      label: const Text(''),
                     ),
                   ),
                 ],

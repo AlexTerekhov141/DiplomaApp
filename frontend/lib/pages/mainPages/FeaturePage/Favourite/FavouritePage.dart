@@ -46,7 +46,11 @@ class _FavouritePageState extends State<FavouritePage>{
                       crossAxisSpacing: 2,
                       mainAxisSpacing: 2
                   ),
-                  itemBuilder: (_, int index) => GalleryPhotoTile(photo: state.favoritePhotos[index],)
+                  itemBuilder: (_, int index) => GalleryPhotoTile(
+                    photo: state.favoritePhotos[index],
+                    photos: state.favoritePhotos,
+                    initialIndex: index,
+                  )
               );
             }
         ))

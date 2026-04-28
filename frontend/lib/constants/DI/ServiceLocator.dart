@@ -58,7 +58,9 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<PhotoRoastRepository>(
-    () => PhotoRoastRepositoryImpl(),
+    () => PhotoRoastRepositoryImpl(
+      photosRepository: getIt<PhotosRepository>(instanceName: 'online'),
+    ),
   );
 
   getIt.registerLazySingleton<AppSettingsRepository>(

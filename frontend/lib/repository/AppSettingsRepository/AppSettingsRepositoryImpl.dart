@@ -4,8 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppSettingsRepositoryImpl implements AppSettingsRepository {
   AppSettingsRepositoryImpl({required this.storage});
-  static const String _modeKey = 'modekeyv3';
-  static const String _choiceKey = 'processing_mode_choice_v4';
+  static const String _modeKey = 'modekeyv5';
+  static const String _choiceKey = 'processing_mode_choice_v6';
   final FlutterSecureStorage storage;
 
   @override

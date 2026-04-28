@@ -21,6 +21,8 @@ class GalleryPhotosGrid extends StatelessWidget {
             (_, int index) {
           return GalleryPhotoTile(
             photo: photos[index],
+            photos: photos,
+            initialIndex: index,
           );
         },
         childCount: photos.length,

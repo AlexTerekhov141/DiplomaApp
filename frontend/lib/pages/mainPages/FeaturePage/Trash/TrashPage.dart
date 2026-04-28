@@ -46,7 +46,12 @@ class _TrashPageState extends State<TrashPage>{
                           crossAxisSpacing: 2,
                           mainAxisSpacing: 2
                       ),
-                      itemBuilder: (_, int index) => GalleryPhotoTile(photo: state.trashedPhotos[index],isInTrash: true,)
+                      itemBuilder: (_, int index) => GalleryPhotoTile(
+                        photo: state.trashedPhotos[index],
+                        photos: state.trashedPhotos,
+                        initialIndex: index,
+                        isInTrash: true,
+                      )
                   );
                 }
             ))
