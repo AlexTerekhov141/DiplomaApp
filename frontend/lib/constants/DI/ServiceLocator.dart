@@ -45,7 +45,9 @@ Future<void> configureDependencies() async {
   final Talker talker = TalkerFlutter.init();
   const FlutterSecureStorage storage = FlutterSecureStorage();
   final Dio dio = createDio();
-  final TextRecognizer textRecognizer = TextRecognizer();
+  final TextRecognizer textRecognizer = TextRecognizer(
+    script: TextRecognitionScript.latin
+  );
   getIt.registerSingleton<Talker>(talker);
   getIt.registerSingleton<FlutterSecureStorage>(storage);
   getIt.registerSingleton<Dio>(dio);
@@ -135,7 +137,7 @@ Future<void> configureDependencies() async {
       () => OcrCleanupAnalyzer(textRecognizer: textRecognizer)
   );
   getIt.registerLazySingleton<CleanupScoreCalculator>(
-      () => CleanupScoreCalculator()
+      () => const CleanupScoreCalculator()
   );
   getIt.registerLazySingleton<CleanupRepository>(
       () => CleanupRepositoryImpl(
@@ -147,7 +149,7 @@ Future<void> configureDependencies() async {
           scoreCalculator: getIt<CleanupScoreCalculator>(),
           enableMetadataAnalyzer: true,
           enableImageQualityAnalyzer: true,
-          enableDuplicateAnalyzer: false,
+          enableDuplicateAnalyzer: true,
           enableOcrAnalyzer: true)
   );
 }

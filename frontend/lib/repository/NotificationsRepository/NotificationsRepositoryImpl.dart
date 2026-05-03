@@ -18,9 +18,9 @@ class NotificationsRepositoryImpl implements Notificationsrepository{
 
     await _plugin.initialize(settings);
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      "Photo_proccessing",
-      "Photo_proccessing",
-      description: "Proggress",
+      'Photo_proccessing',
+      'Photo_proccessing',
+      description: 'Proggress',
       importance: Importance.low,
     );
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
@@ -85,9 +85,9 @@ class NotificationsRepositoryImpl implements Notificationsrepository{
   NotificationDetails _processingDetails({int progress = 0, int maxProgress = 0, bool showProgress = false,}) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        "Proccessing",
-        "Proccessing",
-        channelDescription: "Proggress",
+        'Proccessing',
+        'Proccessing',
+        channelDescription: 'Proggress',
         importance: Importance.low,
         priority: Priority.low,
         ongoing: true,
@@ -104,9 +104,9 @@ class NotificationsRepositoryImpl implements Notificationsrepository{
   NotificationDetails _defaultDetails() {
     return const NotificationDetails(
       android: AndroidNotificationDetails(
-        "Proccessing",
-        "Proccessing",
-        channelDescription: "Proggress",
+        'Proccessing',
+        'Proccessing',
+        channelDescription: 'Proggress',
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
         ongoing: false,

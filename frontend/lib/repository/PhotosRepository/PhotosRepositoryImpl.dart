@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../../constants/Keys.dart';
 import '../../constants/app_config.dart';
 import 'PhotosRepository.dart';
 import 'PhotosRepositoryConstants.dart';
@@ -20,15 +21,15 @@ class PhotosRepositoryImpl implements PhotosRepository {
       ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1)
       : AppConfig.apiBaseUrl;
 
-  String get _photosUrl => '$_baseUrl${PhotosRepositoryConstants.photosPath}';
-  String get _bulkUploadUrl => '$_baseUrl${PhotosRepositoryConstants.bulkUploadPath}';
-  String get _bestPhotosUrl => '$_baseUrl${PhotosRepositoryConstants.bestPhotosPath}';
-  String get _categoriesUrl => '$_baseUrl${PhotosRepositoryConstants.categoriesPath}';
-  String get _tagsUrl => '$_baseUrl${PhotosRepositoryConstants.tagsPath}';
-  String get _refreshUrl => '$_baseUrl${PhotosRepositoryConstants.refreshPath}';
+  String get _photosUrl => '$_baseUrl$photosPath';
+  String get _bulkUploadUrl => '$_baseUrl$bulkUploadPath';
+  String get _bestPhotosUrl => '$_baseUrl$bestPhotosPath';
+  String get _categoriesUrl => '$_baseUrl$categoriesPath';
+  String get _tagsUrl => '$_baseUrl$tagsPath';
+  String get _refreshUrl => '$_baseUrl$refreshPath';
 
   Future<String?> _readAccessToken() async {
-    return storage.read(key: PhotosRepositoryConstants.accessTokenKey);
+    return storage.read(key: accessTokenKey);
   }
 
   bool _isUnauthorized(DioException e) {
@@ -37,7 +38,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
 
   Future<bool> _tryRefreshToken() async {
     final String? refreshToken =
-        await storage.read(key: PhotosRepositoryConstants.refreshTokenKey);
+        await storage.read(key: refreshTokenKey);
     if (refreshToken == null || refreshToken.isEmpty) {
       return false;
     }
@@ -56,13 +57,13 @@ class PhotosRepositoryImpl implements PhotosRepository {
         final String? newRefresh = response.data['refresh'] as String?;
         if (newAccess != null && newAccess.isNotEmpty) {
           await storage.write(
-            key: PhotosRepositoryConstants.accessTokenKey,
+            key: accessTokenKey,
             value: newAccess,
           );
         }
         if (newRefresh != null && newRefresh.isNotEmpty) {
           await storage.write(
-            key: PhotosRepositoryConstants.refreshTokenKey,
+            key: refreshTokenKey,
             value: newRefresh,
           );
         }
@@ -145,7 +146,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
             queryParameters: nextQuery,
             options: (await _authorizedJsonOptions()).copyWith(
               receiveTimeout: const Duration(
-                seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+                seconds: receiveTimeoutSeconds,
               ),
             ),
           );
@@ -242,7 +243,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
         _photosUrl,
         options: (await _authorizedJsonOptions()).copyWith(
           receiveTimeout: const Duration(
-            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+            seconds: receiveTimeoutSeconds,
           ),
         ),
       ),
@@ -268,7 +269,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
         _photosUrl,
         options: (await _authorizedJsonOptions()).copyWith(
           receiveTimeout: const Duration(
-            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+            seconds: receiveTimeoutSeconds,
           ),
         ),
       ),
@@ -280,7 +281,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
         queryParameters: const <String, dynamic>{'is_processed': 'true'},
         options: (await _authorizedJsonOptions()).copyWith(
           receiveTimeout: const Duration(
-            seconds: PhotosRepositoryConstants.receiveTimeoutSeconds,
+            seconds: receiveTimeoutSeconds,
           ),
         ),
       ),
@@ -335,8 +336,8 @@ class PhotosRepositoryImpl implements PhotosRepository {
     }
 
     int uploadedTotal = 0;
-    for (int i = 0; i < pendingAssets.length; i += PhotosRepositoryConstants.uploadChunkSize) {
-      final int end = (i + PhotosRepositoryConstants.uploadChunkSize < pendingAssets.length) ? i + PhotosRepositoryConstants.uploadChunkSize : pendingAssets.length;
+    for (int i = 0; i < pendingAssets.length; i += uploadChunkSize) {
+      final int end = (i + uploadChunkSize < pendingAssets.length) ? i + uploadChunkSize : pendingAssets.length;
       final List<AssetEntity> chunk = pendingAssets.sublist(i, end);
       final List<_UploadItem> chunkItems = <_UploadItem>[];
 
@@ -362,7 +363,7 @@ class PhotosRepositoryImpl implements PhotosRepository {
       try {
         await _uploadItems(chunkItems);
         uploadedTotal += chunkItems.length;
-        uploadedIds.addAll(chunkItems.map((item) => item.assetId));
+        uploadedIds.addAll(chunkItems.map((_UploadItem item) => item.assetId));
       } on DioException catch (e) {
         if (e.response?.statusCode != 400) {
           rethrow;
@@ -432,23 +433,23 @@ class PhotosRepositoryImpl implements PhotosRepository {
   }
 
   Future<Set<String>> _readUploadedAssetIds() async {
-    return _readStringSet(PhotosRepositoryConstants.uploadedAssetIdsKey);
+    return _readStringSet(uploadedAssetIdsKey);
   }
 
   Future<void> _writeUploadedAssetIds(Set<String> ids) async {
     await _writeStringSet(
-      PhotosRepositoryConstants.uploadedAssetIdsKey,
+      uploadedAssetIdsKey,
       ids,
     );
   }
 
   @override
   Future<Set<String>> getFavoriteIds() async {
-    return _readStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey);
+    return _readStringSet(favoritePhotoIdsKey);
   }
 
   Future<void> _writeFavoriteIds(Set<String> ids) async {
-    await _writeStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey, ids);
+    await _writeStringSet(favoritePhotoIdsKey, ids);
   }
 
   @override
@@ -469,11 +470,11 @@ class PhotosRepositoryImpl implements PhotosRepository {
   }
   @override
   Future<Set<String>> getTrashedIds() async {
-    return _readStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey);
+    return _readStringSet(trashedPhotoIdsKey);
   }
 
   Future<void> _writeTrashedIds(Set<String> ids) async {
-    await _writeStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey, ids);
+    await _writeStringSet(trashedPhotoIdsKey, ids);
   }
 
   @override

@@ -149,7 +149,7 @@ class _AppModeState extends State<AppMode> {
               },
             ),
             FilledButton(
-              child: Text("Conutinue"),
+              child: const Text('Conutinue'),
               onPressed: () async {
                 await _settings.setProcessingMode(processingMode);
                 if (!mounted) {

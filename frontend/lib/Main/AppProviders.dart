@@ -13,9 +13,8 @@ import '../bloc/PhotoRoastBloc/photoroastbloc.dart';
 import '../bloc/PhotosBloc/photosbloc.dart';
 import '../bloc/StatisticsBloc/statisticsbloc.dart';
 import '../bloc/themebloc/themebloc.dart';
-
-import '../repository/AuthRepository/AuthRepository.dart';
 import '../repository/AppSettingsRepository/AppSettingsRepository.dart';
+import '../repository/AuthRepository/AuthRepository.dart';
 import '../repository/FolderTagsRepository/FolderTagsRepository.dart';
 import '../repository/ForegroundTaskRepository/ForegroundTaskRepository.dart';
 import '../repository/NotificationsRepository/NotificationsRepository.dart';

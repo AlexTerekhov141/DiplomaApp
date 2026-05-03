@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,16 +27,16 @@ class OcrCleanupAnalyzer {
 
   static const MethodChannel _deviceChannel =
       MethodChannel('categorize_app/device');
-  static const int _minAndroidSdkForOcr = 34;
+  //static const int _minAndroidSdkForOcr = 34;
 
   Future<CleanupSuggestion?> analyze(AssetEntity asset) async {
     if (asset.type != AssetType.image) {
       return null;
     }
 
-    if (!await _isOcrSupportedOnDevice()) {
+    /*if (!await _isOcrSupportedOnDevice()) {
       return null;
-    }
+    }*/
 
     final String text = await recognizeText(asset);
     if (text.trim().isEmpty) {
@@ -44,12 +44,19 @@ class OcrCleanupAnalyzer {
     }
 
     final List<DateTime> dates = _extractDates(text);
+    debugPrint('OCR DATES: $dates');
     if (dates.isEmpty) {
       return null;
     }
 
     final DateTime? expiredDate = _findExpiredDate(dates);
+    debugPrint('OCR EXPIRED DATE: $expiredDate');
     if (expiredDate == null) {
+      return null;
+    }
+    final bool looksLikeAnnouncement = _looksLikeExpiredAnnouncement(text);
+    debugPrint('OCR LOOKS ANNOUNCEMENT: $looksLikeAnnouncement');
+    if (!looksLikeAnnouncement) {
       return null;
     }
 
@@ -76,26 +83,30 @@ class OcrCleanupAnalyzer {
   }
 
   Future<String> recognizeText(AssetEntity asset) async {
-    File? file = await _createThumbnailFile(asset);
-    file ??= await asset.file;
-    if (file == null || !file.existsSync()) {
+    final File? file = await asset.file;
+
+    if (file == null || !await file.exists()) {
       return '';
     }
 
     final InputImage inputImage = InputImage.fromFile(file);
+    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
-    final RecognizedText recognizedText =
-        await textRecognizer.processImage(inputImage);
+    debugPrint('OCR ASSET: ${asset.id} ${asset.title} ${asset.createDateTime}');
+    debugPrint('OCR FILE: ${file.path}');
+    debugPrint('OCR TEXT: ${recognizedText.text}');
+
+    return recognizedText.text;
 
     return recognizedText.text;
   }
 
-  Future<bool> _isOcrSupportedOnDevice() {
+  /*Future<bool> _isOcrSupportedOnDevice() {
     _ocrSupportedFuture ??= _loadOcrSupportedOnDevice();
     return _ocrSupportedFuture!;
-  }
+  }*/
 
-  Future<bool> _loadOcrSupportedOnDevice() async {
+  /*Future<bool> _loadOcrSupportedOnDevice() async {
     if (!Platform.isAndroid) {
       return true;
     }
@@ -108,7 +119,7 @@ class OcrCleanupAnalyzer {
     } catch (_) {
       return false;
     }
-  }
+  }*/
 
   Future<File?> _createThumbnailFile(AssetEntity asset) async {
     final Uint8List? bytes = await asset.thumbnailDataWithSize(
@@ -142,8 +153,11 @@ class OcrCleanupAnalyzer {
 
   bool _looksLikeExpiredAnnouncement(String text) {
     final String normalized = text.toLowerCase();
-    return markers.any(normalized.contains);
+    return markers.any((String marker) {
+      return normalized.contains(marker.toLowerCase());
+    });
   }
+
 
   List<DateTime> _extractDates(String text) {
     final List<DateTime> dates = <DateTime>[];
@@ -155,7 +169,7 @@ class OcrCleanupAnalyzer {
     for (final RegExpMatch match in numericDateRegex.allMatches(normalized)) {
       final int? day = int.tryParse(match.group(1) ?? '');
       final int? month = int.tryParse(match.group(2) ?? '');
-      int? year = int.tryParse(match.group(3) ?? '');
+      final int? year = int.tryParse(match.group(3) ?? '');
 
       _addDateIfValid(dates, day: day, month: month, year: year);
     }
@@ -202,17 +216,31 @@ class OcrCleanupAnalyzer {
   }
 
   static const Map<String, int> _monthNumbers = <String, int>{
-    'Январь': 1,
-    'Февраль': 2,
-    'Март': 3,
-    'Апрель': 4,
-    'Май': 5,
-    'Июнь': 6,
-    'Июль': 7,
-    'Август': 8,
-    'Сентябрь': 9,
-    'Октябрь': 10,
-    'Ноябрь': 11,
-    'Декабрь': 12,
+    'январь': 1,
+    'января': 1,
+    'февраль': 2,
+    'февраля': 2,
+    'март': 3,
+    'марта': 3,
+    'апрель': 4,
+    'апреля': 4,
+    'April': 4,
+    'april': 4,
+    'май': 5,
+    'мая': 5,
+    'июнь': 6,
+    'июня': 6,
+    'июль': 7,
+    'июля': 7,
+    'август': 8,
+    'августа': 8,
+    'сентябрь': 9,
+    'сентября': 9,
+    'октябрь': 10,
+    'октября': 10,
+    'ноябрь': 11,
+    'ноября': 11,
+    'декабрь': 12,
+    'декабря': 12,
   };
 }

@@ -7,8 +7,8 @@ import 'package:categorize_app/repository/TFliteRepository/TFliteRepository.dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../../constants/Keys.dart';
 import '../OfflinePredictionsStorage/OfflinePredictionsStorage.dart';
-import 'PhotosRepositoryConstants.dart';
 
 class Offlinephotosrepositoryimpl implements PhotosRepository {
   Offlinephotosrepositoryimpl({
@@ -20,9 +20,6 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
   final FlutterSecureStorage storage;
   final TFliteRepository tflite;
   final OfflinePredictionsStorage predictionsStorage;
-  static const String _currentModelVersion = 'tflite_model_v4';
-  static const String _legacyMigrationKey =
-      'offline_predictions_sqlite_migrated_v1';
   static const int _defaultBatchSize = 20;
   static const int _assetPageSize = 100;
   static const ThumbnailSize _classificationThumbnailSize = ThumbnailSize(
@@ -212,7 +209,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
 
   @override
   Future<Set<String>> getFavoriteIds() async {
-    return _readStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey);
+    return _readStringSet(favoritePhotoIdsKey);
   }
 
   @override
@@ -268,7 +265,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
 
     final int total = await recentAlbum.assetCountAsync;
     final int rawProcessed = await predictionsStorage.countProcessed(
-      _currentModelVersion,
+      currentModelVersion,
     );
     final int processed = rawProcessed > total ? total : rawProcessed;
     final int pending = total - processed > 0 ? total - processed : 0;
@@ -325,7 +322,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
 
   @override
   Future<Set<String>> getTrashedIds() async {
-    return _readStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey);
+    return _readStringSet(trashedPhotoIdsKey);
   }
 
   @override
@@ -341,7 +338,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
   }
 
   Future<void> _writeFavoriteIds(Set<String> ids) async {
-    await _writeStringSet(PhotosRepositoryConstants.favoritePhotoIdsKey, ids);
+    await _writeStringSet(favoritePhotoIdsKey, ids);
   }
 
   @override
@@ -360,7 +357,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
   }
 
   Future<void> _writeTrashedIds(Set<String> ids) async {
-    await _writeStringSet(PhotosRepositoryConstants.trashedPhotoIdsKey, ids);
+    await _writeStringSet(trashedPhotoIdsKey, ids);
   }
 
   @override
@@ -436,7 +433,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
       return;
     }
 
-    final String? migrated = await storage.read(key: _legacyMigrationKey);
+    final String? migrated = await storage.read(key: legacyMigrationKey);
     if (migrated == 'true') {
       _legacyMigrationChecked = true;
       return;
@@ -448,14 +445,14 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
       await predictionsStorage.upsertPredictions(legacyPredictions);
     }
 
-    await storage.write(key: _legacyMigrationKey, value: 'true');
-    await storage.delete(key: PhotosRepositoryConstants.offlinePredictionsKey);
+    await storage.write(key: legacyMigrationKey, value: 'true');
+    await storage.delete(key: offlinePredictionsKey);
     _legacyMigrationChecked = true;
   }
 
   Future<Map<String, Map<String, dynamic>>> _readLegacyPredictionsMap() async {
     final String? raw =
-        await storage.read(key: PhotosRepositoryConstants.offlinePredictionsKey);
+        await storage.read(key: offlinePredictionsKey);
     if (raw == null || raw.isEmpty) {
       return <String, Map<String, dynamic>>{};
     }
@@ -481,7 +478,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
       'confidence': prediction.confidence,
       'processed': true,
       'tags': <String>[prediction.label],
-      'model_version': _currentModelVersion,
+      'model_version': currentModelVersion,
       'updated_at': DateTime.now().toIso8601String(),
     };
   }
@@ -492,7 +489,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
       'confidence': 0.0,
       'processed': false,
       'tags': <String>['uncategorized'],
-      'model_version': _currentModelVersion,
+      'model_version': currentModelVersion,
       'updated_at': DateTime.now().toIso8601String(),
     };
   }
@@ -503,7 +500,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
       'confidence': 0.0,
       'processed': true,
       'tags': <String>['uncategorized'],
-      'model_version': _currentModelVersion,
+      'model_version': currentModelVersion,
       'updated_at': DateTime.now().toIso8601String(),
     };
   }
@@ -517,7 +514,7 @@ class Offlinephotosrepositoryimpl implements PhotosRepository {
     if (!processed) {
       return true;
     }
-    if (version != _currentModelVersion) {
+    if (version != currentModelVersion) {
       return true;
     }
 

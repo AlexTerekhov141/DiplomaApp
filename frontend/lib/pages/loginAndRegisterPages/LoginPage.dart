@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../constants/Keys.dart';
 import '../onboarding/OnboardingView.dart';
 
 @RoutePage()
@@ -21,7 +22,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  static const String _onboardingSeenKey = 'onboarding_seen_v1199912345';
 
   bool _isLoadingOnboarding = true;
   bool _showOnboarding = true;
@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _loadOnboardingState() async {
     final FlutterSecureStorage storage = GetIt.I<FlutterSecureStorage>();
-    final String? seen = await storage.read(key: _onboardingSeenKey);
+    final String? seen = await storage.read(key: onboardingSeenKey);
     if (!mounted) {
       return;
     }
@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _finishOnboarding() async {
     final FlutterSecureStorage storage = GetIt.I<FlutterSecureStorage>();
-    await storage.write(key: _onboardingSeenKey, value: 'true');
+    await storage.write(key: onboardingSeenKey, value: 'true');
     if (!mounted) {
       return;
     }
@@ -207,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
                                           );
                                         },
                                         child: const Text(
-                                          "Choose processing modes",
+                                          'Choose processing modes',
                                         ),
                                       ),
                                     ],

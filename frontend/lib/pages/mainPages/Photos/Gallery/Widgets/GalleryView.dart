@@ -10,7 +10,6 @@ import '../../../../../constants/Utils/FolderGridSizeMapper.dart';
 import 'GalleryErrorState.dart';
 import 'GalleryLoadingState.dart';
 import 'GalleryPhotosGrid.dart';
-import 'GalleryProccesingCard.dart';
 
 
 class GalleryView extends StatelessWidget {

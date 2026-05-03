@@ -31,7 +31,7 @@ class _SuggestedtrashpageState extends State<Suggestedtrashpage> {
         mobilePadding: EdgeInsets.zero,
         desktopPadding: EdgeInsets.zero,
         child: Column(
-          children: [
+          children: <Widget>[
             const SuggestedTrashProgressHeader(),
             Expanded(
                 child: BlocBuilder<CleanupBloc, CleanupState>(
@@ -149,7 +149,7 @@ class SuggestedTrashGroupsGrid extends StatelessWidget{
   Widget build(BuildContext context) {
     return GridView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,

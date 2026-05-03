@@ -182,20 +182,14 @@ class CleanupRepositoryImpl implements CleanupRepository {
     );
   }
 
-  Future<CleanupSuggestion?> _analyzeWithOcrIfNeeded(
-    AssetEntity asset,
-    CleanupSuggestion? metadataSuggestion,
-  ) async {
-    if (!_shouldRunOcr(metadataSuggestion)) {
-      return null;
-    }
-
+  Future<CleanupSuggestion?> _analyzeWithOcrIfNeeded(AssetEntity asset, CleanupSuggestion? metadataSuggestion,) async {
     try {
       return await ocrAnalyzer.analyze(asset);
     } catch (_) {
       return null;
     }
   }
+
 
   bool _shouldRunOcr(CleanupSuggestion? metadataSuggestion) {
     if (metadataSuggestion == null) {

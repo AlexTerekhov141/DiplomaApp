@@ -5,8 +5,8 @@ class CleanupScoreCalculator {
   const CleanupScoreCalculator();
 
   CleanupSuggestion? pickBest(
-    Iterable<CleanupSuggestion?> suggestions,
-  ) {
+      Iterable<CleanupSuggestion?> suggestions,
+      ) {
     CleanupSuggestion? best;
 
     for (final CleanupSuggestion? suggestion in suggestions) {
@@ -14,13 +14,38 @@ class CleanupScoreCalculator {
         continue;
       }
 
-      if (best == null || suggestion.score > best.score) {
+      if (best == null || _isBetter(suggestion, best)) {
         best = suggestion;
       }
     }
 
     return best;
   }
+
+  bool _isBetter(
+      CleanupSuggestion candidate,
+      CleanupSuggestion current,
+      ) {
+    final int candidatePriority = _priority(candidate.type);
+    final int currentPriority = _priority(current.type);
+
+    if (candidatePriority != currentPriority) {
+      return candidatePriority > currentPriority;
+    }
+
+    return candidate.score > current.score;
+  }
+
+  int _priority(CleanupSuggestionType type) {
+    return switch (type) {
+      CleanupSuggestionType.expired => 5,
+      CleanupSuggestionType.duplicate => 4,
+      CleanupSuggestionType.badQuality => 3,
+      CleanupSuggestionType.document => 2,
+      CleanupSuggestionType.screenshot => 1,
+    };
+  }
+
 
   List<CleanupSuggestion> mergeByAssetId(
     Iterable<CleanupSuggestion> suggestions,

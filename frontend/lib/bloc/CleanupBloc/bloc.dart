@@ -1,3 +1,5 @@
+import 'package:categorize_app/models/CleanUp/CleanupStats.dart';
+import 'package:categorize_app/models/CleanUp/CleanupSuggestionGroup.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/CleanUp/CleanupSuggestion.dart';
@@ -28,8 +30,8 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
     emit(state.copyWith(isLoading: true, clearError: true));
 
     try {
-      final groups = await repository.getSuggestionGroups();
-      final stats = await repository.getStats();
+      final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+      final CleanupStats stats = await repository.getStats();
       emit(state.copyWith(
           groups: groups,
           stats: stats,
@@ -74,8 +76,8 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
         batchSize: event.batchSize,
       );
 
-      final groups = await repository.getSuggestionGroups();
-      final stats = await repository.getStats();
+      final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+      final CleanupStats stats = await repository.getStats();
 
       final int totalProcessed = state.processedCount + processed;
 
@@ -120,7 +122,7 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
     ));
 
     try {
-      final suggestions = await repository.getSuggestionsByType(event.type);
+      final List<CleanupSuggestion> suggestions = await repository.getSuggestionsByType(event.type);
 
       emit(state.copyWith(
         isLoading: false,
@@ -142,9 +144,9 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
 
     final CleanupSuggestionType? selectedType = state.selectedType;
     if (selectedType != null) {
-      final suggestions = await repository.getSuggestionsByType(selectedType);
-      final groups = await repository.getSuggestionGroups();
-      final stats = await repository.getStats();
+      final List<CleanupSuggestion> suggestions = await repository.getSuggestionsByType(selectedType);
+      final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+      final CleanupStats stats = await repository.getStats();
 
       emit(state.copyWith(
         suggestions: suggestions,
@@ -163,9 +165,9 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
 
     final CleanupSuggestionType? selectedType = state.selectedType;
     if (selectedType != null) {
-      final suggestions = await repository.getSuggestionsByType(selectedType);
-      final groups = await repository.getSuggestionGroups();
-      final stats = await repository.getStats();
+      final List<CleanupSuggestion> suggestions = await repository.getSuggestionsByType(selectedType);
+      final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+      final CleanupStats stats = await repository.getStats();
 
       emit(state.copyWith(
         suggestions: suggestions,
@@ -183,8 +185,8 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
   Future<void> _onMoveCleanupGroupToTrash(MoveCleanupGroupToTrash event, Emitter<CleanupState> emit,) async {
     await repository.moveGroupToTrash(event.type);
 
-    final groups = await repository.getSuggestionGroups();
-    final stats = await repository.getStats();
+    final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+    final CleanupStats stats = await repository.getStats();
 
     emit(state.copyWith(
       groups: groups,
@@ -199,8 +201,8 @@ class CleanupBloc extends Bloc<CleanupEvent, CleanupState> {
   Future<void> _onMoveAllCleanupSuggestionsToTrash(MoveAllCleanupSuggestionsToTrash event, Emitter<CleanupState> emit,) async {
     await repository.moveAllToTrash();
 
-    final groups = await repository.getSuggestionGroups();
-    final stats = await repository.getStats();
+    final List<CleanupSuggestionGroup> groups = await repository.getSuggestionGroups();
+    final CleanupStats stats = await repository.getStats();
 
     emit(state.copyWith(
       groups: groups,

@@ -47,7 +47,7 @@ class _AppPageState extends State<AppPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppAppBar(),
+      appBar: const AppAppBar(),
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,

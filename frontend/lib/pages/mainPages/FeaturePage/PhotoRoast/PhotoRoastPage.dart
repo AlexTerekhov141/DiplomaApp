@@ -2,7 +2,6 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../bloc/PhotoRoastBloc/event.dart';
 import '../../../../bloc/PhotoRoastBloc/photoroastbloc.dart';
 import 'Widgets/PhotoRoastView.dart';
 
