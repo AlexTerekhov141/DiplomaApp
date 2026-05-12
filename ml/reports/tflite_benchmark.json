@@ -1,0 +1,12 @@
+{
+  "model": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\artifacts\\photo_classifier_int8.tflite",
+  "model_size_mb": 2.8237533569335938,
+  "samples": 200,
+  "mean_latency_ms": 12.076777000329457,
+  "median_latency_ms": 10.857749999559019,
+  "p90_latency_ms": 16.198740003164854,
+  "p95_latency_ms": 18.250644998624914,
+  "min_latency_ms": 10.722099999838974,
+  "max_latency_ms": 21.237599998130463,
+  "device_note": "This is a desktop sanity benchmark."
+}

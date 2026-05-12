@@ -14,24 +14,61 @@ INPUT_SIZE = (224, 224)
 
 TAGS = [
     # Природа
-    "sunset", "sunrise", "sky", "clouds", "mountains", "ocean", "beach",
-    "forest", "snow", "rain", "flowers", "lake", "river",
+    "sunset",
+    "sunrise",
+    "sky",
+    "clouds",
+    "mountains",
+    "ocean",
+    "beach",
+    "forest",
+    "snow",
+    "rain",
+    "flowers",
+    "lake",
+    "river",
     # Люди
-    "people", "group photo", "selfie", "child", "couple", "family",
+    "people",
+    "group photo",
+    "selfie",
+    "child",
+    "couple",
+    "family",
     # Животные
-    "cat", "dog", "bird", "animal",
+    "cat",
+    "dog",
+    "bird",
+    "animal",
     # Еда и напитки
-    "food", "dessert", "coffee", "drink", "fruit", "restaurant",
+    "food",
+    "dessert",
+    "coffee",
+    "drink",
+    "fruit",
+    "restaurant",
     # Город
-    "city", "building", "street", "car", "architecture",
+    "city",
+    "building",
+    "street",
+    "car",
+    "architecture",
     # Интерьер
-    "interior", "room",
+    "interior",
+    "room",
     # События
-    "party", "wedding", "birthday", "concert", "sport",
+    "party",
+    "wedding",
+    "birthday",
+    "concert",
+    "sport",
     # Активности
-    "travel", "hiking",
+    "travel",
+    "hiking",
     # Документы
-    "document", "text", "receipt", """"screenshot","""
+    "document",
+    "text",
+    "receipt",
+    # "screenshot",
     # Время
     "night",
 ]
@@ -73,7 +110,9 @@ class MLService:
 
         path = getattr(settings, "NIMA_MODEL_PATH", None)
         if not path or not os.path.exists(path):
-            logger.warning("NIMA model not found at %s — using technical metrics only", path)
+            logger.warning(
+                "NIMA model not found at %s — using technical metrics only", path
+            )
             return None
 
         import tensorflow as tf
@@ -124,7 +163,11 @@ class MLService:
         model = self._load_classifier()
 
         img = Image.open(image_path).convert("RGB").resize(INPUT_SIZE)
-        arr = np.expand_dims(np.array(img, dtype=np.float32) / 255.0, axis=0)
+        arr = np.array(img, dtype=np.float32)
+        model_path = getattr(settings, "ML_MODEL_PATH", "")
+        if str(model_path).endswith(".h5"):
+            arr = arr / 255.0
+        arr = np.expand_dims(arr, axis=0)
 
         preds = model.predict(arr, verbose=0)[0]
         idx = int(np.argmax(preds))

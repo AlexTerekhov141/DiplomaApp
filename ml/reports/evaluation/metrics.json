@@ -1,0 +1,105 @@
+{
+  "model": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\artifacts\\photo_classifier.keras",
+  "split": "test",
+  "samples": 2625,
+  "accuracy": 0.9992380952380953,
+  "balanced_accuracy": 0.9992380952380951,
+  "macro_f1": 0.9992380948925599,
+  "weighted_f1": 0.99923809489256,
+  "classification_report": {
+    "document": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 525.0
+    },
+    "screenshot": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 525.0
+    },
+    "food": {
+      "precision": 0.9980952380952381,
+      "recall": 0.9980952380952381,
+      "f1-score": 0.9980952380952381,
+      "support": 525.0
+    },
+    "landscape": {
+      "precision": 0.9980988593155894,
+      "recall": 1.0,
+      "f1-score": 0.9990485252140818,
+      "support": 525.0
+    },
+    "portrait": {
+      "precision": 1.0,
+      "recall": 0.9980952380952381,
+      "f1-score": 0.9990467111534795,
+      "support": 525.0
+    },
+    "accuracy": 0.9992380952380953,
+    "macro avg": {
+      "precision": 0.9992388194821654,
+      "recall": 0.9992380952380951,
+      "f1-score": 0.9992380948925599,
+      "support": 2625.0
+    },
+    "weighted avg": {
+      "precision": 0.9992388194821654,
+      "recall": 0.9992380952380953,
+      "f1-score": 0.99923809489256,
+      "support": 2625.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      525,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      525,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      524,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      525,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      524
+    ]
+  ],
+  "errors": [
+    {
+      "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\food\\tiramisu_3297941.jpg",
+      "true": "food",
+      "predicted": "landscape",
+      "confidence": 0.7351
+    },
+    {
+      "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\portrait\\1 (5285).jpg",
+      "true": "portrait",
+      "predicted": "food",
+      "confidence": 0.6603
+    }
+  ]
+}

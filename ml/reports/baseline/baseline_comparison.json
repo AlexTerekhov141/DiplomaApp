@@ -1,0 +1,383 @@
+{
+  "definition": {
+    "before_training": "The same single-stage MobileNetV2 architecture with ImageNet pretrained backbone and a newly initialized 5-class classification head. No training on the project dataset.",
+    "after_training": "The saved single-stage classifier trained on dataset_splits/train."
+  },
+  "before": {
+    "name": "before_training_imagenet_backbone_random_head",
+    "split": "test",
+    "samples": 2625,
+    "accuracy": 0.13028571428571428,
+    "balanced_accuracy": 0.13028571428571428,
+    "macro_f1": 0.09599171694687263,
+    "weighted_f1": 0.09599171694687264,
+    "classification_report": {
+      "document": {
+        "precision": 0.05460750853242321,
+        "recall": 0.09142857142857143,
+        "f1-score": 0.06837606837606838,
+        "support": 525.0
+      },
+      "screenshot": {
+        "precision": 0.12380952380952381,
+        "recall": 0.024761904761904763,
+        "f1-score": 0.04126984126984127,
+        "support": 525.0
+      },
+      "food": {
+        "precision": 0.17579908675799086,
+        "recall": 0.44,
+        "f1-score": 0.25122349102773245,
+        "support": 525.0
+      },
+      "landscape": {
+        "precision": 0.15076923076923077,
+        "recall": 0.09333333333333334,
+        "f1-score": 0.11529411764705882,
+        "support": 525.0
+      },
+      "portrait": {
+        "precision": 0.5,
+        "recall": 0.0019047619047619048,
+        "f1-score": 0.003795066413662239,
+        "support": 525.0
+      },
+      "accuracy": 0.13028571428571428,
+      "macro avg": {
+        "precision": 0.20099706997383376,
+        "recall": 0.13028571428571428,
+        "f1-score": 0.09599171694687263,
+        "support": 2625.0
+      },
+      "weighted avg": {
+        "precision": 0.2009970699738337,
+        "recall": 0.13028571428571428,
+        "f1-score": 0.09599171694687264,
+        "support": 2625.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        48,
+        12,
+        455,
+        10,
+        0
+      ],
+      [
+        25,
+        13,
+        360,
+        127,
+        0
+      ],
+      [
+        190,
+        39,
+        231,
+        64,
+        1
+      ],
+      [
+        373,
+        14,
+        89,
+        49,
+        0
+      ],
+      [
+        243,
+        27,
+        179,
+        75,
+        1
+      ]
+    ],
+    "errors_count": 2283,
+    "errors_preview": [
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__0000549243_a4dc66b3f6.jpg",
+        "true": "document",
+        "predicted": "landscape",
+        "confidence": 0.3005
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2040261303_3d73106472.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4604
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2041335679_938587da19.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4955
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2058502076_112ecf81e5.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4378
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2061001555_b7091ccf19.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4611
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2064932864_63be558b7a.jpg",
+        "true": "document",
+        "predicted": "landscape",
+        "confidence": 0.2921
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2070393979_ded779ac4c.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.3357
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__2080872121_ffa4f0858e.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4653
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__501708240_-8250_9d27e7207c.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.5946
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__502472907_ed08214f1b.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4967
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__502592259_4672ad5e80.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4045
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__502592990_b8625c3a0c.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4461
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__502612416a-2417_2f0ba9d9b1.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.6475
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__503950378_7c0b6e49eb.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.5013
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__515244307_-4307_e292a79879.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.5524
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__83647137_1badf3ded1.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.489
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__92227521_32edc91c3a.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.3908
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__92525634_ee33e13f33.jpg",
+        "true": "document",
+        "predicted": "landscape",
+        "confidence": 0.3238
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__okl00122_90_11c42ec4ed.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.4585
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\document\\document_docs-sm__advertisement__tob00317_77_90e8438142.jpg",
+        "true": "document",
+        "predicted": "food",
+        "confidence": 0.5515
+      }
+    ]
+  },
+  "after": {
+    "name": "after_training_photo_classifier",
+    "split": "test",
+    "samples": 2625,
+    "accuracy": 0.9992380952380953,
+    "balanced_accuracy": 0.9992380952380951,
+    "macro_f1": 0.9992380948925599,
+    "weighted_f1": 0.99923809489256,
+    "classification_report": {
+      "document": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 525.0
+      },
+      "screenshot": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 525.0
+      },
+      "food": {
+        "precision": 0.9980952380952381,
+        "recall": 0.9980952380952381,
+        "f1-score": 0.9980952380952381,
+        "support": 525.0
+      },
+      "landscape": {
+        "precision": 0.9980988593155894,
+        "recall": 1.0,
+        "f1-score": 0.9990485252140818,
+        "support": 525.0
+      },
+      "portrait": {
+        "precision": 1.0,
+        "recall": 0.9980952380952381,
+        "f1-score": 0.9990467111534795,
+        "support": 525.0
+      },
+      "accuracy": 0.9992380952380953,
+      "macro avg": {
+        "precision": 0.9992388194821654,
+        "recall": 0.9992380952380951,
+        "f1-score": 0.9992380948925599,
+        "support": 2625.0
+      },
+      "weighted avg": {
+        "precision": 0.9992388194821654,
+        "recall": 0.9992380952380953,
+        "f1-score": 0.99923809489256,
+        "support": 2625.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        525,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        525,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        524,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        525,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        524
+      ]
+    ],
+    "errors_count": 2,
+    "errors_preview": [
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\food\\tiramisu_3297941.jpg",
+        "true": "food",
+        "predicted": "landscape",
+        "confidence": 0.7351
+      },
+      {
+        "path": "C:\\Users\\Kirill\\Desktop\\programming\\DiplomaApp\\ml\\dataset_splits\\test\\portrait\\1 (5285).jpg",
+        "true": "portrait",
+        "predicted": "food",
+        "confidence": 0.6603
+      }
+    ]
+  },
+  "per_class_comparison": [
+    {
+      "class": "document",
+      "support": 525,
+      "before_precision": 0.05460750853242321,
+      "before_recall": 0.09142857142857143,
+      "before_f1": 0.06837606837606838,
+      "after_precision": 1.0,
+      "after_recall": 1.0,
+      "after_f1": 1.0,
+      "delta_f1": 0.9316239316239316
+    },
+    {
+      "class": "screenshot",
+      "support": 525,
+      "before_precision": 0.12380952380952381,
+      "before_recall": 0.024761904761904763,
+      "before_f1": 0.04126984126984127,
+      "after_precision": 1.0,
+      "after_recall": 1.0,
+      "after_f1": 1.0,
+      "delta_f1": 0.9587301587301588
+    },
+    {
+      "class": "food",
+      "support": 525,
+      "before_precision": 0.17579908675799086,
+      "before_recall": 0.44,
+      "before_f1": 0.25122349102773245,
+      "after_precision": 0.9980952380952381,
+      "after_recall": 0.9980952380952381,
+      "after_f1": 0.9980952380952381,
+      "delta_f1": 0.7468717470675057
+    },
+    {
+      "class": "landscape",
+      "support": 525,
+      "before_precision": 0.15076923076923077,
+      "before_recall": 0.09333333333333334,
+      "before_f1": 0.11529411764705882,
+      "after_precision": 0.9980988593155894,
+      "after_recall": 1.0,
+      "after_f1": 0.9990485252140818,
+      "delta_f1": 0.883754407567023
+    },
+    {
+      "class": "portrait",
+      "support": 525,
+      "before_precision": 0.5,
+      "before_recall": 0.0019047619047619048,
+      "before_f1": 0.003795066413662239,
+      "after_precision": 1.0,
+      "after_recall": 0.9980952380952381,
+      "after_f1": 0.9990467111534795,
+      "delta_f1": 0.9952516447398173
+    }
+  ]
+}

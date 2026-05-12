@@ -1,0 +1,141 @@
+{
+  "root": "dataset_splits",
+  "splits": {
+    "train": {
+      "total": 12255,
+      "classes": {
+        "document": {
+          "count": 2451,
+          "broken": 0,
+          "min_width": 611,
+          "min_height": 1000,
+          "max_width": 1079,
+          "max_height": 1000
+        },
+        "screenshot": {
+          "count": 2451,
+          "broken": 0,
+          "min_width": 540,
+          "min_height": 960,
+          "max_width": 1080,
+          "max_height": 1920
+        },
+        "food": {
+          "count": 2451,
+          "broken": 0,
+          "min_width": 287,
+          "min_height": 236,
+          "max_width": 512,
+          "max_height": 512
+        },
+        "landscape": {
+          "count": 2451,
+          "broken": 0,
+          "min_width": 321,
+          "min_height": 88,
+          "max_width": 2048,
+          "max_height": 1094
+        },
+        "portrait": {
+          "count": 2451,
+          "broken": 0,
+          "min_width": 194,
+          "min_height": 236,
+          "max_width": 8675,
+          "max_height": 7360
+        }
+      }
+    },
+    "val": {
+      "total": 2625,
+      "classes": {
+        "document": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 645,
+          "min_height": 1000,
+          "max_width": 872,
+          "max_height": 1000
+        },
+        "screenshot": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 540,
+          "min_height": 960,
+          "max_width": 1080,
+          "max_height": 1920
+        },
+        "food": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 288,
+          "min_height": 287,
+          "max_width": 512,
+          "max_height": 512
+        },
+        "landscape": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 413,
+          "min_height": 256,
+          "max_width": 2048,
+          "max_height": 1078
+        },
+        "portrait": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 229,
+          "min_height": 232,
+          "max_width": 7680,
+          "max_height": 5472
+        }
+      }
+    },
+    "test": {
+      "total": 2625,
+      "classes": {
+        "document": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 611,
+          "min_height": 1000,
+          "max_width": 967,
+          "max_height": 1000
+        },
+        "screenshot": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 540,
+          "min_height": 960,
+          "max_width": 1080,
+          "max_height": 1920
+        },
+        "food": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 288,
+          "min_height": 287,
+          "max_width": 512,
+          "max_height": 512
+        },
+        "landscape": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 288,
+          "min_height": 222,
+          "max_width": 2048,
+          "max_height": 1089
+        },
+        "portrait": {
+          "count": 525,
+          "broken": 0,
+          "min_width": 199,
+          "min_height": 308,
+          "max_width": 5605,
+          "max_height": 7680
+        }
+      }
+    }
+  },
+  "duplicates": []
+}

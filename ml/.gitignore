@@ -1,7 +1,11 @@
-./dataset
-./balanced_dataset
-*.png
-*.jpg
-*.jpeg
+__pycache__
+/dataset/
+/balanced_dataset/
+/screenshot_dataset/
+/document_dataset/
+/dataset_splits/
 idea.txt
-*.py
+*.md
+train_nima.py
+balance.py
+test_model.py

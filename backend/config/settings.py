@@ -144,9 +144,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
 }
@@ -163,15 +161,20 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-])
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+)
 CORS_ALLOW_CREDENTIALS = True
 
 # Celery
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env.str(
+    "CELERY_RESULT_BACKEND", default="redis://localhost:6379/0"
+)
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -180,5 +183,10 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 300
 
 # ML
-ML_MODEL_PATH = env.str("ML_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "photo_classifier.h5"))
-NIMA_MODEL_PATH = env.str("NIMA_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "nima_model.h5"))
+ML_MODEL_PATH = env.str(
+    "ML_MODEL_PATH",
+    default=os.path.join(BASE_DIR, "..", "ml", "artifacts", "photo_classifier.keras"),
+)
+NIMA_MODEL_PATH = env.str(
+    "NIMA_MODEL_PATH", default=os.path.join(BASE_DIR, "..", "ml", "nima_model.h5")
+)

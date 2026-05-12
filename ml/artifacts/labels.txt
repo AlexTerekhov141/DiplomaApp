@@ -1,0 +1,5 @@
+document
+screenshot
+food
+landscape
+portrait
