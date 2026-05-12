@@ -13,8 +13,16 @@ import '../../../../models/Photo.dart';
 
 @RoutePage()
 class PhotoViewerPage extends StatefulWidget {
-  const PhotoViewerPage({super.key, required this.photo});
+  const PhotoViewerPage({
+    super.key,
+    required this.photo,
+    this.photos,
+    this.initialIndex,
+  });
+
   final AssetEntity photo;
+  final List<AssetEntity>? photos;
+  final int? initialIndex;
 
   @override
   State<PhotoViewerPage> createState() => _PhotoViewerPageState();
@@ -32,11 +40,16 @@ class _PhotoViewerPageState extends State<PhotoViewerPage> {
     super.initState();
     final PhotosState state = context.read<PhotosBloc>().state;
     _viewerPhotos = _resolveViewerPhotos(state);
-    _currentIndex = _initialIndex(_viewerPhotos, widget.photo.id);
+    _currentIndex = _resolveInitialIndex(_viewerPhotos, widget.photo.id);
     _pageController = PageController(initialPage: _currentIndex);
   }
 
   List<AssetEntity> _resolveViewerPhotos(PhotosState state) {
+    final List<AssetEntity>? explicitPhotos = widget.photos;
+    if (explicitPhotos != null && explicitPhotos.isNotEmpty) {
+      return explicitPhotos;
+    }
+
     if (state.trashedIds.contains(widget.photo.id)) {
       if (state.trashedPhotos.isNotEmpty) {
         return state.trashedPhotos;
@@ -47,7 +60,14 @@ class _PhotoViewerPageState extends State<PhotoViewerPage> {
     return <AssetEntity>[widget.photo];
   }
 
-  int _initialIndex(List<AssetEntity> photos, String selectedId) {
+  int _resolveInitialIndex(List<AssetEntity> photos, String selectedId) {
+    final int? explicitIndex = widget.initialIndex;
+    if (explicitIndex != null &&
+        explicitIndex >= 0 &&
+        explicitIndex < photos.length) {
+      return explicitIndex;
+    }
+
     final int index = photos.indexWhere((AssetEntity p) => p.id == selectedId);
     return index >= 0 ? index : 0;
   }
@@ -103,7 +123,7 @@ class _PhotoViewerPageState extends State<PhotoViewerPage> {
     final AssetEntity currentPhoto = _viewerPhotos[_currentIndex];
     final double screenHeight = MediaQuery.of(context).size.height;
     final double dragProgress =
-        (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
+    (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
     final double scale = 1 - (dragProgress * 0.12);
     final double bgOpacity = 1 - (dragProgress * 0.55);
 
@@ -197,7 +217,7 @@ class _NetworkPhotoViewerPageState extends State<NetworkPhotoViewerPage> {
     }
 
     final int byId = _viewerPhotos.indexWhere(
-      (Photo p) => p.id == widget.photo.id,
+          (Photo p) => p.id == widget.photo.id,
     );
     return byId >= 0 ? byId : 0;
   }
@@ -253,7 +273,7 @@ class _NetworkPhotoViewerPageState extends State<NetworkPhotoViewerPage> {
     final Photo currentPhoto = _viewerPhotos[_currentIndex];
     final double screenHeight = MediaQuery.of(context).size.height;
     final double dragProgress =
-        (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
+    (_verticalDragOffset.abs() / (screenHeight * 0.8)).clamp(0.0, 1.0);
     final double scale = 1 - (dragProgress * 0.12);
     final double bgOpacity = 1 - (dragProgress * 0.55);
 

@@ -4,25 +4,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/Photo.dart';
 import '../../repository/PhotosRepository/PhotosRepository.dart';
+import '../../repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 
 
 class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
-  TagsBloc({required PhotosRepository photosRepository})
-      : _photosRepository = photosRepository,
-        super(TagsBlocState.initial()) {
+  TagsBloc({required this.repository }) : super(TagsBlocState.initial()) {
     on<LoadFolderPhotos>(_onLoadFolderPhotos);
     on<SearchQueryChanged>(_onSearchQueryChanged);
     on<TagSelected>(_onTagSelected);
     on<TagUnselected>(_onTagUnselected);
     on<ClearFilters>(_onClearFilters);
   }
+  final ProccessingRouterRepository repository;
+  Future<PhotosRepository> _activeRepo() => repository.changeMode();
 
-  final PhotosRepository _photosRepository;
 
-  Future<void> _onLoadFolderPhotos(
-      LoadFolderPhotos event,
-      Emitter<TagsBlocState> emit,
-      ) async {
+  Future<void> _onLoadFolderPhotos(LoadFolderPhotos event, Emitter<TagsBlocState> emit,) async {
+    final PhotosRepository _photosRepository = await _activeRepo();
     emit(state.copyWith(isLoading: true, clearError: true));
 
     try {
@@ -35,7 +33,8 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
           .map(Photo.fromJson)
           .where((Photo photo) {
         if (isUncategorized) {
-          return photo.categoryId == null || photo.categoryId!.isEmpty;
+          final String categoryId = photo.categoryId?.trim() ?? '';
+          return categoryId.isEmpty || categoryId == 'uncategorized';
         }
         return photo.categoryId == event.folderId;
       })
@@ -70,10 +69,7 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
     }
   }
 
-  void _onSearchQueryChanged(
-      SearchQueryChanged event,
-      Emitter<TagsBlocState> emit,
-      ) {
+  void _onSearchQueryChanged(SearchQueryChanged event, Emitter<TagsBlocState> emit,) {
     final String query = event.query.trim();
 
     final List<Photo> filteredPhotos = _applyFilters(
@@ -91,10 +87,7 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
     );
   }
 
-  void _onTagSelected(
-      TagSelected event,
-      Emitter<TagsBlocState> emit,
-      ) {
+  void _onTagSelected(TagSelected event, Emitter<TagsBlocState> emit,) {
     if (state.selectedTags.contains(event.tag)) {
       return;
     }
@@ -119,10 +112,7 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
     );
   }
 
-  void _onTagUnselected(
-      TagUnselected event,
-      Emitter<TagsBlocState> emit,
-      ) {
+  void _onTagUnselected(TagUnselected event, Emitter<TagsBlocState> emit,) {
     final List<String> updatedSelectedTags = state.selectedTags
         .where((String tag) => tag != event.tag)
         .toList();
@@ -142,10 +132,7 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
     );
   }
 
-  void _onClearFilters(
-      ClearFilters event,
-      Emitter<TagsBlocState> emit,
-      ) {
+  void _onClearFilters(ClearFilters event, Emitter<TagsBlocState> emit,) {
     emit(
       state.copyWith(
         selectedTags: <String>[],
@@ -156,11 +143,7 @@ class TagsBloc extends Bloc<TagsBlocEvent, TagsBlocState> {
     );
   }
 
-  List<Photo> _applyFilters({
-    required List<Photo> allPhotos,
-    required List<String> selectedTags,
-    required String searchQuery,
-  }) {
+  List<Photo> _applyFilters({required List<Photo> allPhotos, required List<String> selectedTags, required String searchQuery,}) {
     return allPhotos.where((Photo photo) {
       final List<String> normalizedPhotoTags = photo.tags
           .map((String tag) => tag.toLowerCase().trim())

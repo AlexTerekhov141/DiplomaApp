@@ -3,7 +3,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 Future<void> enhanceSaver(Uint8List editedBytes) async {
   final PermissionState permission = await PhotoManager.requestPermissionExtend();
-  if (!permission.isAuth) {
+  if (!permission.hasAccess) {
     throw Exception('Gallery permission denied');
   }
 

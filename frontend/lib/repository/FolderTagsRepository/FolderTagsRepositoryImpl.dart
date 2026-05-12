@@ -3,19 +3,23 @@ import 'package:dio/dio.dart';
 import '../../models/Folders/Folder.dart';
 import '../../models/Folders/FolderResponse.dart';
 import '../PhotosRepository/PhotosRepository.dart';
+import '../ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'FolderTagsRepository.dart';
 
 class FolderTagsRepositoryImpl implements FolderTagsRepository {
-  FolderTagsRepositoryImpl(this.photosRepository);
-  final PhotosRepository photosRepository;
+  FolderTagsRepositoryImpl(this.repository);
+  final ProccessingRouterRepository repository;
+  Future<PhotosRepository> _activeRepo() => repository.changeMode();
 
   @override
   Future<FolderResponse> fetchFolders({bool forceRefresh = false}) async {
+    final PhotosRepository photosRepository = await _activeRepo();
     try {
       final List<Map<String, dynamic>> photos = await photosRepository.getPhotos(
         isProcessed: true,
         forceRefresh: forceRefresh,
       );
+
       final Map<String, Folder> grouped = <String, Folder>{};
 
       for (final Map<String, dynamic> photo in photos) {
@@ -24,6 +28,9 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
             ? rawCategory
             : null;
         final String imageUrl = (photo['image'] ?? '').toString();
+        final String assetId = (photo['asset_id'] ?? '').toString();
+        final String previewSource =
+            imageUrl.isNotEmpty ? imageUrl : 'asset:$assetId';
 
         final String folderId = category?['id']?.toString() ?? 'uncategorized';
         final String folderName = category?['name']?.toString() ?? 'Uncategorized';
@@ -31,8 +38,8 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
         final Folder? existing = grouped[folderId];
         if (existing == null) {
           final List<String> previewUrls = <String>[];
-          if (imageUrl.isNotEmpty) {
-            previewUrls.add(imageUrl);
+          if (imageUrl.isNotEmpty || assetId.isNotEmpty) {
+            previewUrls.add(previewSource);
           }
           grouped[folderId] = Folder(
             id: folderId,
@@ -42,8 +49,9 @@ class FolderTagsRepositoryImpl implements FolderTagsRepository {
           );
         } else {
           final List<String> previewUrls = List<String>.from(existing.previewUrls);
-          if (imageUrl.isNotEmpty && previewUrls.length < 4) {
-            previewUrls.add(imageUrl);
+          if ((imageUrl.isNotEmpty || assetId.isNotEmpty) &&
+              previewUrls.length < 4) {
+            previewUrls.add(previewSource);
           }
           grouped[folderId] = Folder(
             id: existing.id,

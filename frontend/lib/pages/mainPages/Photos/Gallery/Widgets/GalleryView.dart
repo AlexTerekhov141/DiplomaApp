@@ -10,7 +10,6 @@ import '../../../../../constants/Utils/FolderGridSizeMapper.dart';
 import 'GalleryErrorState.dart';
 import 'GalleryLoadingState.dart';
 import 'GalleryPhotosGrid.dart';
-import 'GalleryProccesingCard.dart';
 
 
 class GalleryView extends StatelessWidget {
@@ -93,7 +92,7 @@ class GalleryView extends StatelessWidget {
                 return CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: <Widget>[
-                    if (showProcessingCard)
+                    /*if (showProcessingCard)
                       SliverToBoxAdapter(
                         child: GalleryProcessingCard(
                           processed: processed,
@@ -101,7 +100,7 @@ class GalleryView extends StatelessWidget {
                           pending: pending,
                           progress: progress,
                         ),
-                      ),
+                      ),*/
                     GalleryPhotosGrid(
                       photos: state.activePhotos,
                       crossAxisCount: crossAxisCount,

@@ -8,6 +8,7 @@ class Photo {
   Photo({
     required this.id,
     required this.image,
+    required this.assetId,
     required this.categoryId,
     required this.category,
     required this.qualityScore,
@@ -21,6 +22,7 @@ class Photo {
     return Photo(
       id: json['id'] as int,
       image: (json['image'] ?? '').toString(),
+      assetId: (json['asset_id'] ?? '').toString(),
       categoryId: _categoryIdFromJson(rawCategory),
       category: _categoryNameFromJson(rawCategory),
       qualityScore: (json['quality_score'] ?? 0).toDouble(),
@@ -29,6 +31,7 @@ class Photo {
   }
   final int id;
   final String image;
+  final String assetId;
   final String? categoryId;
   final String category;
 

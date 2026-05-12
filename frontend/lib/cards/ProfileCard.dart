@@ -25,6 +25,10 @@ class ProfileCard extends StatelessWidget {
     const AssetImage fallbackAvatar = AssetImage('assets/profiles/profile.png');
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide.none
+      ),
       elevation: 0,
       color: Colors.transparent,
       child: Column(

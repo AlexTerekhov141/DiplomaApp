@@ -23,20 +23,12 @@ class OnboardingActionButtons extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 10),
           child: SizedBox(
             width: double.infinity,
-            height: 52,
             child: FilledButton(
               onPressed: onPrimaryPressed,
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF7B7DF6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
               child: Text(
                 isLastPage ? 'Create account' : 'Next',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.labelLarge?.copyWith(
                   color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -47,7 +39,7 @@ class OnboardingActionButtons extends StatelessWidget {
           child: Text(
             isLastPage ? 'Log in' : 'Skip',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: const Color(0xFF7B8094),
+              color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),

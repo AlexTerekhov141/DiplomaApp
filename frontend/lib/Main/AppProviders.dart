@@ -1,3 +1,6 @@
+import 'package:categorize_app/bloc/CleanupBloc/cleanupbloc.dart';
+import 'package:categorize_app/repository/CleanupRepository/CleanupRepository.dart';
+import 'package:categorize_app/repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -10,11 +13,12 @@ import '../bloc/PhotoRoastBloc/photoroastbloc.dart';
 import '../bloc/PhotosBloc/photosbloc.dart';
 import '../bloc/StatisticsBloc/statisticsbloc.dart';
 import '../bloc/themebloc/themebloc.dart';
-
+import '../repository/AppSettingsRepository/AppSettingsRepository.dart';
 import '../repository/AuthRepository/AuthRepository.dart';
 import '../repository/FolderTagsRepository/FolderTagsRepository.dart';
+import '../repository/ForegroundTaskRepository/ForegroundTaskRepository.dart';
+import '../repository/NotificationsRepository/NotificationsRepository.dart';
 import '../repository/PhotoRoastRepository/PhotoRoastRepository.dart';
-import '../repository/PhotosRepository/PhotosRepository.dart';
 
 class AppProviders extends StatelessWidget {
   const AppProviders({
@@ -30,7 +34,9 @@ class AppProviders extends StatelessWidget {
       providers: <SingleChildWidget>[
         BlocProvider(
           create: (_) => PhotosBloc(
-            photosRepository: GetIt.I<PhotosRepository>(),
+            repository: GetIt.I<ProccessingRouterRepository>(),
+            notifications: GetIt.I<Notificationsrepository>(),
+            foregroundTaskRepository: GetIt.I<ForegroundTaskRepository>(),
           ),
         ),
         BlocProvider(
@@ -51,11 +57,10 @@ class AppProviders extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) {
-            final AuthBloc authBloc = AuthBloc(
+            return AuthBloc(
               authRepository: GetIt.I<AuthRepository>(),
+              appSettingsRepository: GetIt.I<AppSettingsRepository>(),
             );
-            authBloc.add(AuthStarted());
-            return authBloc;
           },
         ),
         BlocProvider(
@@ -69,6 +74,7 @@ class AppProviders extends StatelessWidget {
             repository: GetIt.I<PhotoRoastRepository>(),
           ),
         ),
+        BlocProvider(create: (_) => CleanupBloc(repository: GetIt.I<CleanupRepository>()))
       ],
       child: child,
     );

@@ -20,7 +20,7 @@ class EditPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppAppBar(),
+      appBar: const AppAppBar(),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (BuildContext context, AuthState state) {
           final String? errorMessage =

@@ -14,6 +14,8 @@ class SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
@@ -29,15 +31,12 @@ class SettingsGroup extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: theme.textTheme.titleSmall,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: theme.textTheme.bodySmall,
                   ),
                 ],
               ),

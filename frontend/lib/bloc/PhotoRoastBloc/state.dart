@@ -1,62 +1,43 @@
-import 'dart:typed_data';
-
 import 'package:equatable/equatable.dart';
 
-import '../../models/PhotoRoastModels/RoastIssue.dart';
+import '../../models/PhotoRoastModels/QualityPhotoGroup.dart';
 
 class PhotoRoastState extends Equatable {
   const PhotoRoastState({
-    required this.imageBytes,
-    required this.isAnalyzing,
-    required this.score,
-    required this.issues,
+    required this.isLoading,
+    required this.groups,
     this.error,
   });
 
   factory PhotoRoastState.initial() {
     return const PhotoRoastState(
-      imageBytes: null,
-      isAnalyzing: false,
-      score: null,
-      issues: <RoastIssue>[],
+      isLoading: false,
+      groups: <QualityPhotoGroup>[],
       error: null,
     );
   }
 
-  final Uint8List? imageBytes;
-  final bool isAnalyzing;
-  final int? score;
-  final List<RoastIssue> issues;
+  final bool isLoading;
+  final List<QualityPhotoGroup> groups;
   final String? error;
 
-  bool get hasImage => imageBytes != null && imageBytes!.isNotEmpty;
-  bool get hasResult => score != null && issues.isNotEmpty;
-
   PhotoRoastState copyWith({
-    Uint8List? imageBytes,
-    bool keepImageBytes = true,
-    bool? isAnalyzing,
-    int? score,
-    bool keepScore = true,
-    List<RoastIssue>? issues,
+    bool? isLoading,
+    List<QualityPhotoGroup>? groups,
     String? error,
     bool clearError = false,
   }) {
     return PhotoRoastState(
-      imageBytes: keepImageBytes ? (imageBytes ?? this.imageBytes) : null,
-      isAnalyzing: isAnalyzing ?? this.isAnalyzing,
-      score: keepScore ? (score ?? this.score) : score,
-      issues: issues ?? this.issues,
-      error: clearError ? null : (error ?? this.error),
+      isLoading: isLoading ?? this.isLoading,
+      groups: groups ?? this.groups,
+      error: clearError ? null : error ?? this.error,
     );
   }
 
   @override
   List<Object?> get props => <Object?>[
-    imageBytes,
-    isAnalyzing,
-    score,
-    issues,
-    error,
-  ];
+        isLoading,
+        groups,
+        error,
+      ];
 }

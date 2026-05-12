@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import '../../../../bloc/tagsbloc/bloc.dart';
 import '../../../../bloc/tagsbloc/event.dart';
 import '../../../../models/Folders/Folder.dart';
-import '../../../../repository/PhotosRepository/PhotosRepository.dart';
+import '../../../../repository/ProccessingRouterRepository/ProccessingRouterRepository.dart';
 import 'Widgets/FolderDetailsView.dart';
 
 
@@ -23,7 +23,7 @@ class FolderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<TagsBloc>(
       create: (_) => TagsBloc(
-        photosRepository: GetIt.I<PhotosRepository>(),
+        repository: GetIt.I<ProccessingRouterRepository>(),
       )..add(LoadFolderPhotos(folderId: folder.id)),
       child: FolderDetailsView(folder: folder),
     );

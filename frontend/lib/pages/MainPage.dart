@@ -1,14 +1,21 @@
 import 'package:auto_route/annotations.dart';
 import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/BottomBar.dart';
+import 'package:categorize_app/bloc/PhotosBloc/photosbloc.dart';
 import 'package:categorize_app/pages/mainPages/FeaturePage/Chat/ChatPage.dart';
 import 'package:categorize_app/pages/mainPages/Photos/Folders/FoldersPage.dart';
 import 'package:categorize_app/pages/mainPages/Photos/Gallery/GalleryPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 @RoutePage()
 class AppPage extends StatefulWidget {
-  const AppPage({super.key});
+  const AppPage({
+    super.key,
+    this.initialIndex = 0,
+  });
+
+  final int initialIndex;
 
   @override
   State<AppPage> createState() => _AppPageState();
@@ -21,7 +28,14 @@ class _AppPageState extends State<AppPage> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      context.read<PhotosBloc>().add(PhotosLoadEvent());
+    });
   }
 
   @override
@@ -33,7 +47,7 @@ class _AppPageState extends State<AppPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppAppBar(),
+      appBar: const AppAppBar(),
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,

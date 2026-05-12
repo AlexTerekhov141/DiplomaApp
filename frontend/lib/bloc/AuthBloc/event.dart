@@ -1,3 +1,5 @@
+import '../../models/Processing_mode.dart';
+
 abstract class AuthEvent {}
 
 class AuthEmailChanged extends AuthEvent {
@@ -58,4 +60,12 @@ class AuthProfileImageUpdate extends AuthEvent {
   });
 
   final String imagePath;
+}
+
+class AuthProfileUserChoiceUpdate extends AuthEvent {
+  AuthProfileUserChoiceUpdate({
+    required this.processingMode,
+  });
+
+  final ProcessingMode processingMode;
 }

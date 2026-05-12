@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:categorize_app/Routes/routes.gr.dart';
-import 'package:categorize_app/Widgets/AppAppBar.dart';
 import 'package:categorize_app/Widgets/ResponsiveFrame.dart';
 import 'package:categorize_app/bloc/AuthBloc/bloc.dart';
 import 'package:categorize_app/bloc/AuthBloc/event.dart';
@@ -38,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const AppRoute(),
+            AppRoute(),
             const ProfileRoute(),
           ]);
         }
@@ -46,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     return Scaffold(
-      appBar: AppAppBar(),
+      //appBar: AppAppBar(),
       body: ResponsiveFrame(
         maxWidth: 720,
         child: BlocListener<AuthBloc, AuthState>(
@@ -59,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) {
                   context.router.replaceAll(<PageRouteInfo<dynamic>>[
-                    const AppRoute(),
+                    AppRoute(),
                     const ProfileRoute(),
                   ]);
                 }
